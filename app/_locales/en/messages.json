@@ -1,0 +1,22 @@
+{
+  "appName": {
+    "message": "OverleafReviewer",
+    "description": "The name of the application"
+  },
+  "appShortName": {
+    "message": "OverleafReviewer",
+    "description": "The short_name (maximum of 12 characters recommended) is a short version of the app's name."
+  },
+  "appDescription": {
+    "message": "An extensions for the instantiation of a conceptual model of provenance analysis for describing user interaction with LLMs \n",
+    "description": "The description of the application"
+  },
+  "browserActionTitle": {
+    "message": "OverleafReviewer",
+    "description": "The title of the browser action button"
+  },
+  "pageActionTitle": {
+    "message": "OverleafReviewer",
+    "description": "The title of the browser action button"
+  }
+}
