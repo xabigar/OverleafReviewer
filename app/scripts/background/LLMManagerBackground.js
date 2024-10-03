@@ -97,19 +97,6 @@ class LLMManagerBackground {
             )// Return the error inside the message handler
           }
           return true // Return true inside the message handler
-        } else if (request.cmd === 'openAIBasic') {
-          if (request.data.documents) {
-            this.askLLMOpenAIWithDocumentsBasicPlan(request).then(
-              res => sendResponse({ res: res }),
-              err => sendResponse({ err: err })
-            )// Return the error inside the message handler
-          } else {
-            this.askLLMOpenAIBasicPlan(request).then(
-              res => sendResponse({ res: res }),
-              err => sendResponse({ err: err })
-            )// Return the error inside the message handler
-          }
-          return true // Return true inside the message handler
         }
       }
     })
@@ -178,7 +165,7 @@ class LLMManagerBackground {
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
     let totalExecutionTokens = 0
-
+    const modelName = request.data.llm.model
     const model = new ChatOpenAI({
       temperature: 0,
       callbacks: [
@@ -196,7 +183,7 @@ class LLMManagerBackground {
           }
         }
       ],
-      modelName: 'gpt-4-1106-preview',
+      modelName: modelName,
       openAIApiKey: apiKey,
       modelKwargs: {
         'response_format': {
@@ -236,7 +223,7 @@ class LLMManagerBackground {
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
     let totalExecutionTokens = 0
-
+    const modelName = request.data.llm.model
     const model = new ChatOpenAI({
       temperature: 0,
       callbacks: [
@@ -254,7 +241,7 @@ class LLMManagerBackground {
           }
         }
       ],
-      modelName: 'gpt-4-1106-preview',
+      modelName: modelName,
       openAIApiKey: apiKey,
       modelKwargs: {
         'response_format': {
@@ -285,6 +272,7 @@ class LLMManagerBackground {
   async askLLMAnthropic (request) {
     const apiKey = request.data.apiKey
     const query = request.data.query
+    const modelName = request.data.llm.model
     // create model
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
@@ -292,7 +280,7 @@ class LLMManagerBackground {
     const model = new ChatAnthropic({
       temperature: 0.2,
       anthropicApiKey: apiKey,
-      modelName: 'claude-2.0',
+      modelName: modelName,
       callbacks: [
         {
           handleLLMEnd: (output, runId, parentRunId, tags) => {
@@ -335,10 +323,11 @@ class LLMManagerBackground {
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
     let totalExecutionTokens = 0
+    const modelName = request.data.llm.model
     const model = new ChatAnthropic({
       temperature: 0.2,
       anthropicApiKey: apiKey,
-      modelName: 'claude-2.0',
+      modelName: modelName,
       callbacks: [
         {
           handleLLMEnd: (output, runId, parentRunId, tags) => {
@@ -436,7 +425,7 @@ class LLMManagerBackground {
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
     let totalExecutionTokens = 0
-
+    const modelName = request.data.llm.model
     const model = new ChatOpenAI({
       temperature: 0,
       callbacks: [
@@ -454,7 +443,7 @@ class LLMManagerBackground {
           }
         }
       ],
-      modelName: 'gpt-3.5-turbo',
+      modelName: modelName,
       openAIApiKey: apiKey,
       modelKwargs: {
         'response_format': {
@@ -494,7 +483,7 @@ class LLMManagerBackground {
     let totalCompletionTokens = 0
     let totalPromptTokens = 0
     let totalExecutionTokens = 0
-
+    const modelName = request.data.llm.model
     const model = new ChatOpenAI({
       temperature: 0,
       callbacks: [
@@ -512,7 +501,7 @@ class LLMManagerBackground {
           }
         }
       ],
-      modelName: 'gpt-3.5-turbo',
+      modelName: modelName,
       openAIApiKey: apiKey,
       modelKwargs: {
         'response_format': {

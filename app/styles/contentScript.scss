@@ -1,28 +1,107 @@
-/* @import '../../node_modules/bootstrap/dist/css/bootstrap.min'; */
-
-
-#dscaffolding_link img{
-  width: 32px;
+/* Sidebar styles */
+#criteriaSidebar {
+  width: 355px;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  background-color: #f1f1f1;
+  padding: 10px;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  overflow-y: auto; /* Allows vertical scrolling */
+  max-height: 100vh; /* Set max height for the sidebar */
 }
 
-#dscaffolding_link {
-  width: -webkit-fill-available;
+/* Sidebar header */
+#criteriaSidebar h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
-.chatin_mode{
+/* Dropdown, Import, and +Category in the same line */
+#dropdown-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* Add space between buttons */
+  margin-bottom: 10px; /* Add space below */
+}
+
+/* Add margin to separate Import and Category buttons */
+#addCategoryBtn, #importCriteriaBtn {
+  padding: 5px 10px;
+  border: 1px solid #007bff;
+  background-color: transparent; /* No background */
+  color: #007bff; /* Blue text */
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
 }
 
-.chatin-attachment-button {
-  width: 130px;
-  height: 60px;
-  background-color: #96DB0B;
+/* Change button on hover to give it an effect */
+#addCategoryBtn:hover, #importCriteriaBtn:hover {
+  background-color: #007bff;
+  color: white;
 }
 
-.chatin_question{
+/* Criteria button styles */
+.criteria-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Space between buttons */
+}
+
+.criteria-button {
+  flex: 1 1 calc(50% - 10px); /* Two buttons per row with gap adjustment */
+  padding: 10px;
+  background-color: #e0e0e0;
+  border: 1px solid black;
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  white-space: nowrap; /* Keep text in a single line */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Show ellipsis if text overflows */
+}
+
+/* Category header styling */
+.criteria-category h3 {
+  margin-right: 10px;
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+/* Horizontal line between categories */
+.category-separator {
+  border: 1px solid #ccc;
+  margin: 15px 0; /* Add some space above and below the line */
+}
+
+/* Context menu styles */
+#contextMenu {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 9999;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+#contextMenu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#contextMenu ul li {
+  padding: 5px 10px;
   cursor: pointer;
 }
 
-.chatin_answer{
-  cursor: pointer;
+#contextMenu ul li:hover {
+  background-color: #f1f1f1;
 }

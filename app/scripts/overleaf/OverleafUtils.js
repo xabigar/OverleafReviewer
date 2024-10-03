@@ -1,113 +1,154 @@
-
 class OverleafUtils {
   static async getAllEditorContent () {
-    // Select the scrollable container and the contenteditable element
     let onTop = false
-    const editorContainer = document.querySelector('.cm-scroller');
-    const contentEditable = document.querySelector('.cm-content');
-    const lineNumbersContainer = document.querySelector('.cm-lineNumbers'); // Line numbers container
-    let contentLines = []; // Use an array to preserve order
-    let capturedLineNumbers = new Set(); // Track line numbers to avoid duplicates
+    const editorContainer = document.querySelector('.cm-scroller')
+    const contentEditable = document.querySelector('.cm-content')
+    const lineNumbersContainer = document.querySelector('.cm-lineNumbers')
+    let contentLines = []
+    let capturedLineNumbers = new Set()
 
     if (!editorContainer || !contentEditable || !lineNumbersContainer) {
-      console.error("Editor elements not found");
-      return;
+      console.error('Editor elements not found')
+      return
     }
 
-    // Function to scroll down and wait for content to load
-    function scrollEditor(position) {
+    function scrollEditor (position) {
       return new Promise((resolve) => {
-        editorContainer.scrollTo({ top: position });
-        setTimeout(resolve, 50); // Wait for content to load after scrolling
-      });
+        editorContainer.scrollTo({ top: position })
+        setTimeout(resolve, 100)
+      })
     }
 
-    // Helper function to extract visible text from the editor, including text between spans
-    function extractVisibleText() {
-      const lineNumbers = Array.from(lineNumbersContainer.querySelectorAll('.cm-gutterElement')).slice(1); // Get all line numbers, skip the first
-      let lines = contentEditable.querySelectorAll('.cm-line, .cm-gap'); // Get all lines and gaps
+    function extractVisibleText () {
+      const lineNumbers = Array.from(lineNumbersContainer.querySelectorAll('.cm-gutterElement')).slice(1)
+      let lines = contentEditable.querySelectorAll('.cm-line, .cm-gap')
 
-      let myText = Array.from(lines).map((line, index) => {
-        let lineText = "";
+      let myText = Array.from(lines).map((line) => {
+        let lineText = ''
         if (line.classList.contains('cm-line')) {
-          // Extract text between spans and inside spans in the correct order
-          line.childNodes.forEach(node => {
+          line.childNodes.forEach((node) => {
             if (node.nodeType === Node.TEXT_NODE) {
-              lineText += node.textContent || ""; // Text between spans
+              lineText += node.textContent || ''
             } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SPAN') {
-              lineText += node.innerText || ""; // Text inside spans
+              lineText += node.innerText || ''
             }
-          });
-          return lineText.trim(); // Return the collected line text
+          })
+          return lineText.trim()
         } else if (line.classList.contains('cm-gap')) {
-          return ""; // Return an empty string for gaps
+          return ''
         }
-      });
+      })
 
-      let myLineNumbers = lineNumbers.map(item => item.textContent); // Extract the line numbers as text
+      let myLineNumbers = lineNumbers.map((item) => item.textContent)
 
       if (myLineNumbers.length > 0 && myLineNumbers[0] === '1') {
-        onTop = true; // Check if we are on top of the document
+        onTop = true
       }
 
-      // Remove the first three elements if we are on top
       if (onTop) {
-        myText = myText.slice(3);
+        myText = myText.slice(3)
 
-        // If there are more lines than line numbers, trim the lines array to match line numbers
         if (lines.length > myLineNumbers.length) {
-          myText = myText.slice(0, myLineNumbers.length); // Slice the myText array to match the length of lineNumbers
+          myText = myText.slice(0, myLineNumbers.length)
         }
 
-        // console.log(myText); // Log the text for each line
-        // console.log(myLineNumbers); // Log the corresponding line numbers
-
-        // Iterate over both myText and myLineNumbers and construct the contentLines array
         myText.forEach((text, index) => {
-          const lineNumber = myLineNumbers[index]; // Get the corresponding line number
+          const lineNumber = myLineNumbers[index] // Get the corresponding line number
           if (lineNumber && !capturedLineNumbers.has(lineNumber)) {
             if (text.trim()) {
-              contentLines.push(`${lineNumber}: ${text}`); // Add line number and text
+              contentLines.push(`${lineNumber}: ${text}`) // Add line number and text
             } else {
-              contentLines.push(`${lineNumber}: \n`); // Empty line with a line number
+              contentLines.push(`${lineNumber}: \n`) // Empty line with a line number
             }
-            capturedLineNumbers.add(lineNumber); // Mark the line number as captured
+            capturedLineNumbers.add(lineNumber) // Mark the line number as captured
           }
-        });
-
-        // console.log(contentLines); // Log the full content with line numbers
+        })
       }
     }
 
-    // Keep track of the scroll position and height
-    let position = 0;
-    let aux = 1
-    // Loop until we've scrolled to the bottom and no more content is being loaded
+    let position = 0
     while (position < editorContainer.scrollHeight) {
-      // console.log('Current position:', position, 'Scroll height:', editorContainer.scrollHeight);
-
-      // Extract visible text after each scroll
-      extractVisibleText();
-      if (aux === 1) {
-        aux = 0
-      }
-      // Move the scroll position down
-      await scrollEditor(position); // Scroll down
-
-      // Update the scroll position
-      position = editorContainer.scrollTop + editorContainer.clientHeight;
-
-      // Check if we've reached the bottom
+      extractVisibleText()
+      await scrollEditor(position)
+      position = editorContainer.scrollTop + editorContainer.clientHeight
       if (Math.ceil(position) >= editorContainer.scrollHeight) {
-        break;
+        break
       }
     }
 
-    // Join the lines in the order they were captured
-    const fullText = contentLines.join('\n');
+    let fullText = contentLines.join('\n')
+    console.log('Full text:', fullText)
+    fullText = contentLines
+      .map(line => line.replace(/^\d+:\s*/, '')) // Remove the leading '{number}: ' pattern
+      .join('\n')
+    return fullText
+  }
 
-    // console.log("Full editor content:", fullText);
-    return fullText; // Ensure we return the full extracted text
+  static async removeContent (callback) {
+    const editorContent = document.querySelector('#panel-source-editor > div > div > div.cm-scroller > div.cm-content.cm-lineWrapping')
+    if (!editorContent) {
+      console.error('Editor content element not found')
+    } else {
+      while (editorContent.firstChild) {
+        editorContent.removeChild(editorContent.firstChild)
+      }
+      console.log('All child nodes removed from editor content.')
+      if (callback) {
+        callback()
+      }
+    }
+  }
+
+  static async insertContent (content) {
+    const editorContent = document.querySelector('.cm-content')
+
+    if (!editorContent) {
+      console.error('Editor elements not found')
+      return
+    }
+
+    // Helper function to insert text at the current cursor position
+    function insertTextAtCursor(text) {
+      const range = document.getSelection().getRangeAt(0)
+      const textNode = document.createTextNode(text)
+      range.deleteContents()
+      range.insertNode(textNode)
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode)
+
+      // Simulate typing event to update the editor content
+      const event = new Event('input', { bubbles: true })
+      editorContent.dispatchEvent(event)
+    }
+
+    // Focus the editor and place the cursor at the end or start
+    function focusEditor () {
+      editorContent.focus()
+
+      const range = document.createRange()
+      const selection = window.getSelection()
+
+      // Move the cursor to the end of the content
+      range.selectNodeContents(editorContent)
+      range.collapse(false) // Set to true for start, false for end
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+
+    // Write the text in parts, simulating a typing experience
+    async function writeText (text) {
+      focusEditor()
+
+      // Optionally, split the text into lines to insert gradually or simulate typing speed
+      const lines = text.split('\n')
+      for (let line of lines) {
+        insertTextAtCursor(line + '\n')
+        await new Promise((resolve) => setTimeout(resolve, 5)) // Simulate typing delay
+      }
+    }
+
+    // Start the text insertion
+    await writeText(content)
   }
 }
 

@@ -34,7 +34,7 @@ class LLMClient {
   }
 
   static async simpleQuestion ({apiKey, callback, prompt, llm}) {
-    chrome.runtime.sendMessage({ scope: 'askLLM', cmd: llm, data: {apiKey: apiKey, query: prompt} }, function (response) {
+    chrome.runtime.sendMessage({ scope: 'askLLM', cmd: llm.modelType, data: {apiKey: apiKey, query: prompt, llm: llm} }, function (response) {
       if (chrome.runtime.lastError) {
         Alerts.showErrorToast('Unable to ask OpenAI: ' + chrome.runtime.lastError.message)
       } else if (response.res.error) {

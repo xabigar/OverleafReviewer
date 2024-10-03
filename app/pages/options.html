@@ -2,7 +2,7 @@
 <html>
 <head>
   </script>
-  <title>ChatinVis options</title>
+  <title>OverleafReviewer options</title>
   <link rel="stylesheet" type="text/css" href="../styles/options.css">
   <link rel="stylesheet" type="text/css" href="../styles/bootstrap.min.css">
 </head>
@@ -14,37 +14,27 @@
         <img class="logo" src="../images/128.png">
       </div>
       <div class="col-sm-6 col-md-10">
-        <h2 class="title">ChatinVis configuration</h2>
-      </div>
-    </div>
-    <br/>
-    <h3>Authorization request</h3>
-    Tick off to grant access to your account in the following platforms:
-    <br/><br/>
-    <div class="row">
-      <div class="col-sm-6 col-md-2">
-        <div class="thumbnail externalService disabled" id="mindmeisterEnable">
-          <img src="../images/mindmeister.png">
-          <div class="caption">
-            <input type="checkbox" id="mindmeisterEnableCheckbox"/><span class="serviceName">Mindmeister</span>
-          </div>
-        </div>
+        <h2 class="title">OverleafReviewer configuration</h2>
       </div>
     </div>
     <br/>
     <br/>
     <h3>ChatGPT</h3>
-    <span>Please, choose the way to connect with ChatGPT:</span>
+    <span>Please, choose the way to connect with Large Language Model:</span>
     <div class="card">
       <div class="card-header card-header bg-dark text-white">Large Language Model selection</div>
       <div class="card-body">
         <div class="form-check">
           <label for="LLMDropdown">Select your Large Language Model</label>
           <select class="form-control" id="LLMDropdown">
-            <option value="anthropic" selected="selected">Anthropic (Claude-2)</option>
-            <option value="openAI">OpenAI (GPT4-turbo)</option>
-            <option value="openAIBasic">OpenAI (GPT3.5)</option>
+            <option value="anthropic" selected="selected">Anthropic</option>
+            <option value="openAI">OpenAI</option>
           </select>
+        </div>
+        <!-- Model Selection -->
+        <div id="modelSelectionContainer" style="display:none;">
+          <label for="modelDropdown">Select a Model:</label>
+          <select class="form-control" id="modelDropdown"></select>
         </div>
         <br>
         <div id="anthropic-ApiKeyContainer" class="APIKey-Configuration">
@@ -57,22 +47,12 @@
           <input type="text" id="openAI-APIKey" />
           <button id="openAI-APIKeyValidationButton" class="APIKeyValidationButton">Save</button>
         </div>
-        <div id="openAIBasic-ApiKeyContainer" class="APIKey-Configuration">
-          <label>Paste here your OpenAI basic API key:</label>
-          <input type="text" id="openAIBasic-APIKey" />
-          <button id="openAIBasic-APIKeyValidationButton" class="APIKeyValidationButton">Save</button>
-        </div>
       </div >
     </div>
     <br/>
   </div>
    </div>
 </div>
-<button id="deleteLogs">Delete logs</button>
-<button id="showLogs">Show logs</button>
-<button id="exportLogs">Export logs (csv)</button>
-<button id="exportLogsJson">Export json</button>
-<button id="importLogsJson">Import logs json</button>
 </script>
 <script src="../scripts/options.js">
 </script>

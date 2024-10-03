@@ -14,6 +14,30 @@ class FileUtils {
     }
   }
 
+  static checkPackagesInOverleaf (document) {
+    const xcolorPackage = '\\usepackage{xcolor}'
+    const todonotesPackage = '\\usepackage{todonotes}'
+
+    let needsXColor = !document.includes(xcolorPackage)
+    let needsTodoNotes = !document.includes(todonotesPackage)
+
+    // Step 3: If the packages are missing, add them at the beginning of the document
+    if (needsXColor || needsTodoNotes) {
+      let packageInsert = ''
+
+      if (needsXColor) {
+        packageInsert += `${xcolorPackage}\n`
+      }
+
+      if (needsTodoNotes) {
+        packageInsert += `${todonotesPackage}\n`
+      }
+
+      // Add the missing packages at the beginning of the LaTeX document
+      return packageInsert + document
+    }
+  }
+
   static readJSONFile (file, callback) {
     FileUtils.readTextFile(file, (err, text) => {
       if (err) {
