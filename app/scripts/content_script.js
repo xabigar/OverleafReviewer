@@ -1,4 +1,4 @@
-
+const _ = require('lodash')
 const OverleafManager = require('./overleaf/OverleafManager')
 
 class ContentScript {
@@ -12,5 +12,7 @@ class ContentScript {
   }
 }
 
-const cs = new ContentScript()
-cs.init()
+if (_.isEmpty(window.promptex)) {
+  window.promptex = new ContentScript()
+  window.promptex.init()
+}

@@ -2,8 +2,6 @@ const $ = require('jquery')
 const _ = require('lodash')
 window.$ = $
 
-const Alerts = require('./utils/Alerts')
-const FileUtils = require('./utils/FileUtils')
 
 if (window.location.href.includes('pages/options.html')) {
   const defaultLLM = { modelType: 'openAI', model: 'gpt-4' }

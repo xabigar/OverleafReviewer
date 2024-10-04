@@ -3,6 +3,7 @@ const Config = require('../Config')
 const Alerts = require('../utils/Alerts')
 const LLMClient = require('../llm/LLMClient')
 const FileUtils = require('../utils/FileUtils')
+const DBManager = require('./DBManager')
 
 class CriterionActions {
   static async askCriterionAssessment (criterionLabel, description) {
@@ -39,11 +40,12 @@ class CriterionActions {
                 console.log(`Excerpt not found: "${excerpt}"`)
               }
             })
-            let newContent = CriterionActions.addCommentsToLatex(documents, cleanExcerpts)
-            newContent = FileUtils.checkPackagesInOverleaf(newContent)
-            console.log('textAdded:::' + newContent)
+            let suggestion = json.suggestionForImprovement
+            let sentiment = json.sentiment
+            let newContent = CriterionActions.addCommentsToLatex(documents, cleanExcerpts, suggestion, sentiment, criterionLabel)
             OverleafUtils.removeContent(() => {
               OverleafUtils.insertContent(newContent)
+
             })
           }
           LLMClient.simpleQuestion({
@@ -68,20 +70,15 @@ class CriterionActions {
      */
   }
 
-  static addCommentsToLatex (originalLatex, excerpts) {
+  static addCommentsToLatex (originalLatex, excerpts, suggestion, sentiment, criterionLabel) {
+    let sentimentColor = sentiment.toLowerCase()
     excerpts.forEach(excerpt => {
-      // Escape any characters that could interfere with regex matching
-      // let escapedExcerpt = excerpt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-
-      // Create the new text to insert with \mycomment{}
-      let commentCommand = `\\todo[color=red!40]{${excerpt}}`
+      let commentCommand = `\\todo[color=${sentimentColor}!40]{${criterionLabel}...${suggestion}}`
       // Add the \mycomment after each occurrence of the excerpt in the latex file
-      originalLatex = originalLatex.replace(new RegExp(excerpt, 'g'), `${excerpt} ${commentCommand}`)
-    });
-
+      originalLatex = originalLatex.replace(excerpt, `${excerpt} ${commentCommand}`)
+    })
     return originalLatex
   }
-
 
   // Make this method static to call within the static askCriterionAssessment method
   static processTexDocument (documents) {

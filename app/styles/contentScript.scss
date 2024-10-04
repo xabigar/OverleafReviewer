@@ -13,10 +13,24 @@
   max-height: 100vh; /* Set max height for the sidebar */
 }
 
+.custom-loading-popup {
+  z-index: 9999 !important;
+}
+
 /* Sidebar header */
 #criteriaSidebar h2 {
   font-size: 24px;
   margin-bottom: 20px;
+}
+
+#panel-outline {
+  height: 50%; /* Set the height of the outline panel to 50% */
+  min-height: 64px; /* Update the minimum height to 64px */
+  overflow: auto; /* Ensure the content is scrollable */
+}
+
+.outline-pane {
+  height: 50%; /* Set the height of each outline pane to split the space evenly */
 }
 
 /* Dropdown, Import, and +Category in the same line */

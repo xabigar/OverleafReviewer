@@ -119,6 +119,7 @@ class Alerts {
       position: 'bottom-end',
       showConfirmButton: false,
       showCancelButton: false,
+      customClass: 'custom-loading-toast',
       onBeforeOpen: () => {
         swal.showLoading()
       }

@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "OverleafReviewer",
+    "message": "PrompTeX",
     "description": "The name of the application"
   },
   "appShortName": {
-    "message": "OverleafReviewer",
+    "message": "PrompTeX",
     "description": "The short_name (maximum of 12 characters recommended) is a short version of the app's name."
   },
   "appDescription": {
@@ -12,11 +12,11 @@
     "description": "The description of the application"
   },
   "browserActionTitle": {
-    "message": "OverleafReviewer",
+    "message": "PrompTeX",
     "description": "The title of the browser action button"
   },
   "pageActionTitle": {
-    "message": "OverleafReviewer",
+    "message": "PrompTeX",
     "description": "The title of the browser action button"
   }
 }

@@ -15,7 +15,7 @@ class OverleafUtils {
     function scrollEditor (position) {
       return new Promise((resolve) => {
         editorContainer.scrollTo({ top: position })
-        setTimeout(resolve, 100)
+        setTimeout(resolve, 250)
       })
     }
 
@@ -44,21 +44,47 @@ class OverleafUtils {
       if (myLineNumbers.length > 0 && myLineNumbers[0] === '1') {
         onTop = true
       }
-
       if (onTop) {
-        myText = myText.slice(3)
+        if (myLineNumbers[0] !== '1') {
+          // check from already saved content the first five myLineNumbers and myText correspond;
+          let isAligned = false
+          const maxCheckLength = 5 // Let's check the first five lines for alignment
+          let offset = 0
+          // Compare saved content to find where the mismatch happens
+          while (!isAligned && offset < maxCheckLength) {
+            isAligned = true // Assume alignment is correct at the start
 
-        if (lines.length > myLineNumbers.length) {
+            // Check the first few stored line numbers and text to ensure alignment
+            for (let i = 0; i < Math.min(myText.length, maxCheckLength); i++) {
+              const savedContentLine = contentLines.find(line => line.startsWith(`${myLineNumbers[i]}:`))
+              const currentLine = `${myLineNumbers[i]}: ${myText[i] || '\n'}` // Create new line to compare (with line number)
+
+              // If there's a mismatch between stored and new line number:text, it's not aligned
+              if (savedContentLine && savedContentLine !== currentLine) {
+                isAligned = false // If any mismatch is found, set to false
+                break
+              }
+            }
+
+            // If not aligned, remove the first element of myText (shift) and increment the offset
+            if (!isAligned) {
+              myText = myText.slice(1) // Remove the first element of the text
+              offset++ // Move forward to recheck
+            }
+          }
+        }
+        // Ensure the text length matches the line numbers length if more lines are added
+        if (myText.length > myLineNumbers.length) {
           myText = myText.slice(0, myLineNumbers.length)
         }
-
-        myText.forEach((text, index) => {
-          const lineNumber = myLineNumbers[index] // Get the corresponding line number
+        // Loop over the line numbers and match with the text content
+        myLineNumbers.forEach((lineNumber, index) => {
+          const text = myText[index] // Get the corresponding text for this line number
           if (lineNumber && !capturedLineNumbers.has(lineNumber)) {
-            if (text.trim()) {
-              contentLines.push(`${lineNumber}: ${text}`) // Add line number and text
+            if (text) {
+              contentLines.push(`${lineNumber}: ${text}`) // Add the line number and the corresponding text
             } else {
-              contentLines.push(`${lineNumber}: \n`) // Empty line with a line number
+              contentLines.push(`${lineNumber}: \n`) // Handle the empty text case
             }
             capturedLineNumbers.add(lineNumber) // Mark the line number as captured
           }
@@ -71,11 +97,10 @@ class OverleafUtils {
       extractVisibleText()
       await scrollEditor(position)
       position = editorContainer.scrollTop + editorContainer.clientHeight
-      if (Math.ceil(position) >= editorContainer.scrollHeight) {
+      if (Math.ceil(position) + 1 >= editorContainer.scrollHeight) {
         break
       }
     }
-
     let fullText = contentLines.join('\n')
     console.log('Full text:', fullText)
     fullText = contentLines
@@ -108,7 +133,7 @@ class OverleafUtils {
     }
 
     // Helper function to insert text at the current cursor position
-    function insertTextAtCursor(text) {
+    function insertTextAtCursor (text) {
       const range = document.getSelection().getRangeAt(0)
       const textNode = document.createTextNode(text)
       range.deleteContents()
