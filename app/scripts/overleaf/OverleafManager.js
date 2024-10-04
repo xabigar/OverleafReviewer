@@ -423,6 +423,54 @@ class OverleafManager {
     }
     that.addButton()
     that.addOutlineButton()
+    that.monitorEditorContent()
+  }
+
+  monitorEditorContent () {
+    // Use setInterval to check every second (1000ms)
+    setInterval(() => {
+      // Get all elements with the class 'ol-cm-command-promptex'
+      let elements = document.querySelectorAll('.ol-cm-command-promptex');
+      elements.forEach((element) => {
+        // Log the content of each found element to the console
+        console.log('PrompTeX Command Found:', element.innerHTML);
+        // Check if the content matches the format 'text::number'
+        const match = element.innerHTML.match(/(.*)::(\d+)/);
+        if (match) {
+          const text = match[1];
+          const number = parseInt(match[2], 10);
+
+          // Apply background color based on the number
+          if (number === 0) {
+            element.style.backgroundColor = 'green';  // Set background to green
+          } else if (number === 1) {
+            element.style.backgroundColor = 'yellow';  // Set background to yellow
+          } else if (number === 2) {
+            element.style.backgroundColor = 'red';  // Set background to red
+          } else {
+            element.style.backgroundColor = '';  // Reset background for other cases
+          }
+        }
+        /* const childNodes = Array.from(element.childNodes);
+        childNodes.forEach((child) => {
+          if (child.nodeType !== Node.TEXT_NODE) {
+            child.style.display = 'none'; // cm-matchingBracket
+          }
+        }) */
+        const previousSibling = element.previousElementSibling;
+        const secondPreviousSibling = previousSibling.previousElementSibling;
+        const nextSibling = element.nextElementSibling;
+        const firstElementChild = element.firstElementChild;
+        const secondElementChild = firstElementChild.nextElementSibling;
+        if (previousSibling && secondPreviousSibling) {
+          previousSibling.style.display = 'none'; // cm-matchingBracket
+          secondPreviousSibling.style.display = 'none'; // \promptex
+          nextSibling.style.display = 'none'; // cm-punctuation
+          firstElementChild.style.display = 'none'; // cm-punctuation
+          secondElementChild.style.display = 'none'; // cm-punctuation
+        }
+      })
+    }, 1000) // Every second
   }
 
   addButton () {

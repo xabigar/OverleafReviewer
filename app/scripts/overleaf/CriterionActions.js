@@ -73,9 +73,9 @@ class CriterionActions {
   static addCommentsToLatex (originalLatex, excerpts, suggestion, sentiment, criterionLabel) {
     let sentimentColor = sentiment.toLowerCase()
     excerpts.forEach(excerpt => {
-      let commentCommand = `\\todo[color=${sentimentColor}!40]{${criterionLabel}...${suggestion}}`
+      let commentCommand = `\\promptex{${criterionLabel}...${sentiment}}{${excerpt}}`
       // Add the \mycomment after each occurrence of the excerpt in the latex file
-      originalLatex = originalLatex.replace(excerpt, `${excerpt} ${commentCommand}`)
+      originalLatex = originalLatex.replace(excerpt, `${commentCommand}`)
     })
     return originalLatex
   }
