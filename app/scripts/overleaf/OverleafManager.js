@@ -542,7 +542,33 @@ class OverleafManager {
     })
   }
 
-  addOutlineButton () {
+  addButton () {
+    // Create the 'Check Criteria' button element
+    let checkCriteriaButton = document.createElement('div')
+    checkCriteriaButton.classList.add('toolbar-item')
+    checkCriteriaButton.innerHTML = `
+      <button type='button' class='btn btn-full-height' id='checkCriteriaBtn'>
+        <i class='fa fa-check-square-o fa-fw' aria-hidden='true'></i>
+        <p class='toolbar-label'>Ask PrompTeX</p>
+      </button>
+    `
+    // Locate the toolbar where the button should be added
+    let toolbar = document.querySelector('.toolbar-right')
+
+    // Insert the 'Check Criteria' button at the end of the toolbar list
+    if (toolbar) {
+      toolbar.appendChild(checkCriteriaButton)
+    } else {
+      console.error('Toolbar not found')
+    }
+
+    checkCriteriaButton.addEventListener('click', async () => {
+      // const content = await OverleafUtils.getAllEditorContent()
+      this.showCriteriaSidebar()
+    })
+  }
+
+  addOutlineButton() {
     // Structure of the content you provided
     const outlineContent = {
       'Essential Attributes': ['Artifact', 'Evaluation'],
@@ -555,11 +581,12 @@ class OverleafManager {
 
     // Create a new pane for the outline
     const newOutlinePane = document.createElement('div')
-    newOutlinePane.classList.add('outline-pane')
+    newOutlinePane.classList.add('outline-pane2')
 
     // Create the header for the new outline
     const newHeader = document.createElement('header')
     newHeader.classList.add('outline-header')
+    newHeader.classList.add('closed')
 
     const headerButton = document.createElement('button')
     headerButton.classList.add('outline-header-expand-collapse-btn')
@@ -573,27 +600,13 @@ class OverleafManager {
 
     const headerTitle = document.createElement('h4')
     headerTitle.classList.add('outline-header-name')
-    headerTitle.textContent = 'Content outline' // Update title to "Foundation outline"
+    headerTitle.textContent = 'Foundation outline' // Update title to "Foundation outline"
 
     // Append the caret and title to the header button, and the button to the header
     headerButton.appendChild(caretIcon)
     headerButton.appendChild(headerTitle)
     newHeader.appendChild(headerButton)
     newOutlinePane.appendChild(newHeader)
-
-    // Create the body for the new outline (initially hidden)
-    const outlineBody = document.createElement('div')
-    outlineBody.classList.add('outline-body')
-    outlineBody.style.display = 'none' // Hidden by default
-
-    // Create the root list for the items
-    const rootList = document.createElement('ul')
-    rootList.classList.add('outline-item-list', 'outline-item-list-root')
-    rootList.setAttribute('role', 'tree')
-    outlineBody.appendChild(rootList)
-
-    // Append outline body to the pane
-    newOutlinePane.appendChild(outlineBody)
 
     // Append the new outline pane to the container BEFORE the original outline
     const originalOutline = document.querySelector('.outline-pane')
@@ -610,88 +623,113 @@ class OverleafManager {
     const outlinePanes = document.querySelectorAll('.outline-pane')
 
     // Set height for each pane to split space equally
-    outlinePanes.forEach(pane => {
+    /* outlinePanes.forEach(pane => {
       pane.style.height = '50%'
+    }) */
+    outlinePanes.forEach(pane => {
+      pane.style.height = 'auto'
     })
 
     // Handle header click to show/hide the outline body of THIS outline only
     newHeader.addEventListener('click', (event) => {
       event.stopPropagation() // Prevent interference with other outlines
-      const isHidden = outlineBody.style.display === 'none'
-      outlineBody.style.display = isHidden ? 'block' : 'none'
+      const isHidden = newHeader.classList.contains('closed');
+
+      // Toggle between opened and closed state
+      if (isHidden) {
+        newHeader.classList.replace('closed', 'opened');
+        // Ensure outline body is visible
+        const outlineBody = document.createElement('div');
+        outlineBody.classList.add('outline-body');
+
+        // Create the root list for the items
+        const rootList = document.createElement('ul');
+        rootList.classList.add('outline-item-list', 'outline-item-list-root');
+        rootList.setAttribute('role', 'tree');
+        outlineBody.appendChild(rootList);
+
+        // Helper function to create list items
+        const createListItem = (label) => {
+          const li = document.createElement('li')
+          li.classList.add('outline-item', 'outline-item-no-children')
+          li.setAttribute('role', 'treeitem')
+
+          const div = document.createElement('div')
+          div.classList.add('outline-item-row')
+
+          const button = document.createElement('button')
+          button.classList.add('outline-item-link')
+          button.textContent = label
+
+          div.appendChild(button)
+          li.appendChild(div)
+
+          return li
+        }
+
+        // Iterate through the content to build the outline
+        Object.keys(outlineContent).forEach((category) => {
+          // Create a parent item for each category
+          const categoryLi = document.createElement('li')
+          categoryLi.classList.add('outline-item')
+          categoryLi.setAttribute('role', 'treeitem')
+          categoryLi.setAttribute('aria-expanded', 'true')
+
+          const categoryDiv = document.createElement('div')
+          categoryDiv.classList.add('outline-item-row')
+
+          // Add expand/collapse button
+          const categoryButton = document.createElement('button')
+          categoryButton.classList.add('outline-item-expand-collapse-btn')
+          categoryButton.setAttribute('aria-label', 'Collapse')
+          categoryButton.setAttribute('aria-expanded', 'true') // Initially expanded
+
+          const categoryIcon = document.createElement('span')
+          categoryIcon.classList.add('material-symbols', 'outline-caret-icon')
+          categoryIcon.textContent = 'keyboard_arrow_down' // Default to expanded
+          categoryButton.appendChild(categoryIcon)
+
+          const categoryTitle = document.createElement('button')
+          categoryTitle.classList.add('outline-item-link')
+          categoryTitle.textContent = category
+
+          categoryDiv.appendChild(categoryButton)
+          categoryDiv.appendChild(categoryTitle)
+          categoryLi.appendChild(categoryDiv)
+
+          // Add sub-items (attributes)
+          const subList = document.createElement('ul')
+          subList.classList.add('outline-item-list')
+          subList.setAttribute('role', 'group')
+
+          outlineContent[category].forEach((subItem) => {
+            subList.appendChild(createListItem(subItem))
+          })
+
+          categoryLi.appendChild(subList)
+          rootList.appendChild(categoryLi)
+
+          // Toggle sub-list visibility on category click
+          categoryButton.addEventListener('click', () => {
+            const isExpanded = categoryLi.getAttribute('aria-expanded') === 'true'
+            categoryLi.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')
+            subList.style.display = isExpanded ? 'none' : 'block'
+            categoryIcon.textContent = isExpanded ? 'keyboard_arrow_right' : 'keyboard_arrow_down'
+            categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
+          })
+        })
+        // Add the outline body to the pane, and let it push content down
+        newOutlinePane.appendChild(outlineBody);
+      } else {
+        newHeader.classList.replace('opened', 'closed');
+        const outlineBody = newOutlinePane.querySelector('.outline-body');
+        if (outlineBody) {
+          outlineBody.style.display = 'none'; // Collapse the body
+          newOutlinePane.removeChild(outlineBody); // Remove from DOM
+        }
+      }
       caretIcon.textContent = isHidden ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
-      headerButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false') // Toggle aria-expanded
-    })
-
-    // Helper function to create list items
-    const createListItem = (label) => {
-      const li = document.createElement('li')
-      li.classList.add('outline-item', 'outline-item-no-children')
-      li.setAttribute('role', 'treeitem')
-
-      const div = document.createElement('div')
-      div.classList.add('outline-item-row')
-
-      const button = document.createElement('button')
-      button.classList.add('outline-item-link')
-      button.textContent = label
-
-      div.appendChild(button)
-      li.appendChild(div)
-
-      return li
-    }
-
-    // Iterate through the content to build the outline
-    Object.keys(outlineContent).forEach((category) => {
-      // Create a parent item for each category
-      const categoryLi = document.createElement('li')
-      categoryLi.classList.add('outline-item')
-      categoryLi.setAttribute('role', 'treeitem')
-      categoryLi.setAttribute('aria-expanded', 'true')
-
-      const categoryDiv = document.createElement('div')
-      categoryDiv.classList.add('outline-item-row')
-
-      // Add expand/collapse button
-      const categoryButton = document.createElement('button')
-      categoryButton.classList.add('outline-item-expand-collapse-btn')
-      categoryButton.setAttribute('aria-label', 'Collapse')
-      categoryButton.setAttribute('aria-expanded', 'true') // Initially expanded
-
-      const categoryIcon = document.createElement('span')
-      categoryIcon.classList.add('material-symbols', 'outline-caret-icon')
-      categoryIcon.textContent = 'keyboard_arrow_down' // Default to expanded
-      categoryButton.appendChild(categoryIcon)
-
-      const categoryTitle = document.createElement('button')
-      categoryTitle.classList.add('outline-item-link')
-      categoryTitle.textContent = category
-
-      categoryDiv.appendChild(categoryButton)
-      categoryDiv.appendChild(categoryTitle)
-      categoryLi.appendChild(categoryDiv)
-
-      // Add sub-items (attributes)
-      const subList = document.createElement('ul')
-      subList.classList.add('outline-item-list')
-      subList.setAttribute('role', 'group')
-
-      outlineContent[category].forEach((subItem) => {
-        subList.appendChild(createListItem(subItem))
-      })
-
-      categoryLi.appendChild(subList)
-      rootList.appendChild(categoryLi)
-
-      // Toggle sub-list visibility on category click
-      categoryButton.addEventListener('click', () => {
-        const isExpanded = categoryLi.getAttribute('aria-expanded') === 'true'
-        categoryLi.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')
-        subList.style.display = isExpanded ? 'none' : 'block'
-        categoryIcon.textContent = isExpanded ? 'keyboard_arrow_right' : 'keyboard_arrow_down'
-        categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
-      })
+      // headerButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false') // Toggle aria-expanded
     })
   }
 
