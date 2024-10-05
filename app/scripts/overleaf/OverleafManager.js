@@ -431,46 +431,84 @@ class OverleafManager {
     setInterval(() => {
       // Get all elements with the class 'ol-cm-command-promptex'
       let elements = document.querySelectorAll('.ol-cm-command-promptex');
-      elements.forEach((element) => {
-        // Log the content of each found element to the console
-        console.log('PrompTeX Command Found:', element.innerHTML);
-        // Check if the content matches the format 'text::number'
-        const match = element.innerHTML.match(/(.*)::(\d+)/);
-        if (match) {
-          const text = match[1];
-          const number = parseInt(match[2], 10);
 
-          // Apply background color based on the number
-          if (number === 0) {
-            element.style.backgroundColor = 'green';  // Set background to green
-          } else if (number === 1) {
-            element.style.backgroundColor = 'yellow';  // Set background to yellow
-          } else if (number === 2) {
-            element.style.backgroundColor = 'red';  // Set background to red
-          } else {
-            element.style.backgroundColor = '';  // Reset background for other cases
+      elements.forEach((element) => {
+        // Find the first .ol-cm-command-textit inside the element
+        let commandTextit = element.querySelector('.ol-cm-command-textit');
+
+        if (commandTextit) {
+          // Extract the text content from the .ol-cm-command-textit element
+          let commandText = commandTextit.textContent;
+          let criterion = ''
+          // Log the content for debugging
+          console.log('PrompTeX Command Found:', commandText);
+
+          // Check if the content matches the format 'text::number'
+          const match = commandText.match(/(.*)::(\d+)/);
+
+          if (match) {
+            criterion = match[1];
+            const number = parseInt(match[2], 10);
+
+            // Apply background color based on the number
+            if (number === 0) {
+              element.style.backgroundColor = 'green'; // Set background to green
+            } else if (number === 1) {
+              element.style.backgroundColor = 'yellow'; // Set background to yellow
+            } else if (number === 2) {
+              element.style.backgroundColor = 'red'; // Set background to red
+            } else {
+              element.style.backgroundColor = ''; // Reset background for other cases
+            }
+          }
+
+          // Set the display of the first .ol-cm-command-textit element to 'none'
+          commandTextit.style.display = 'none';
+          // Hide the first two .tok-punctuation.ol-cm-punctuation elements
+          const previousSibling = element.previousElementSibling;
+          const secondPreviousSibling = previousSibling?.previousElementSibling;
+          const nextSibling = element.nextElementSibling
+          if (previousSibling && secondPreviousSibling) {
+            previousSibling.style.display = 'none'; // cm-matchingBracket
+            secondPreviousSibling.style.display = 'none'; // \promptex
+            nextSibling.style.display = 'none'; // cm-punctuation
+            // firstBracket.style.display = 'none'; // cm-punctuation
+          }
+          // Select all elements with both classes 'tok-punctuation' and 'ol-cm-punctuation' inside the current item
+          element.querySelectorAll('.tok-punctuation.ol-cm-punctuation').forEach(punctuationElement => {
+            // Hide the punctuation element by setting display to 'none'
+            punctuationElement.style.display = 'none';
+          })
+          // Add tooltip to the element
+          // if right-clicked, show a context menu
+          let criterionElement = this.findCriterion(criterion)
+          element.title = 'This is a PrompTeX command: ' + criterionElement.Description;
+          element.addEventListener('contextmenu', function(event) {
+            event.preventDefault(); // Prevent the default right-click menu
+
+            // Show alert with the tooltip message
+            alert('This is a PrompTeX command: ' + criterionElement.Description);
+            return false; // Additional return to ensure default action is canceled
+
+          })
+          // element.title = criterion ? criterion.Description : 'No criterion found';
+        }
+      });
+    }, 1000); // Every second
+  }
+
+  findCriterion (text) {
+    // Iterate through the criteria database
+    for (const list in this.criteriaDatabase) {
+      for (const category in this.criteriaDatabase[list]) {
+        for (const criterion in this.criteriaDatabase[list][category]) {
+          if (criterion.toLowerCase() === text.toLowerCase()) {
+            return this.criteriaDatabase[list][category][criterion];
           }
         }
-        /* const childNodes = Array.from(element.childNodes);
-        childNodes.forEach((child) => {
-          if (child.nodeType !== Node.TEXT_NODE) {
-            child.style.display = 'none'; // cm-matchingBracket
-          }
-        }) */
-        const previousSibling = element.previousElementSibling;
-        const secondPreviousSibling = previousSibling.previousElementSibling;
-        const nextSibling = element.nextElementSibling;
-        const firstElementChild = element.firstElementChild;
-        const secondElementChild = firstElementChild.nextElementSibling;
-        if (previousSibling && secondPreviousSibling) {
-          previousSibling.style.display = 'none'; // cm-matchingBracket
-          secondPreviousSibling.style.display = 'none'; // \promptex
-          nextSibling.style.display = 'none'; // cm-punctuation
-          firstElementChild.style.display = 'none'; // cm-punctuation
-          secondElementChild.style.display = 'none'; // cm-punctuation
-        }
-      })
-    }, 1000) // Every second
+      }
+    }
+    return null;
   }
 
   addButton () {
@@ -497,6 +535,42 @@ class OverleafManager {
       // const content = await OverleafUtils.getAllEditorContent()
       this.showCriteriaSidebar()
     })
+  }
+
+  wrapFirstChildTextInSpan (element) {
+    const firstChild = element.firstChild
+    // Check if the first child is a text node
+    if (firstChild && firstChild.nodeType === Node.TEXT_NODE) {
+      // Create a new span element
+      const span = document.createElement('span')
+      // Set the text content of the span to the firstChild's text content
+      span.textContent = firstChild.textContent
+      // Replace the text node with the span element
+      element.replaceChild(span, firstChild)
+      console.log('Wrapped the firstChild text inside a <span>.')
+    } else {
+      console.log('The first child is not a text node.')
+    }
+  }
+
+  getFirstElementOrTextNode (element) {
+    const firstChild = element.firstChild
+
+    if (firstChild) {
+      if (firstChild.nodeType === Node.ELEMENT_NODE && firstChild.tagName.toLowerCase() === 'span') {
+        console.log("The first child is a <span> element.")
+        return firstChild;
+      } else if (firstChild.nodeType === Node.TEXT_NODE) {
+        console.log("The first child is a text node.")
+        return firstChild;
+      } else {
+        console.log("The first child is neither a <span> nor a text node.")
+      }
+    } else {
+      console.log("The element has no children.")
+    }
+
+    return null; // If no matching node is found
   }
 
   addOutlineButton() {
