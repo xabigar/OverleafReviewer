@@ -1,26 +1,43 @@
 
 class DBManager {
-  static criterionPrompted (criterionLabel, description) {
-    // Split the content into lines
-    let lines = documents.split('\n')
+  static saveCriterionAssessment (criterionLabel, description, cleanExcerpts, suggestion, sentiment, effortLevel = null, effortDescription = null) {
+    // Access the database from the OverleafManager instance
+    let db = window.promptex._overleafManager.criteriaDatabase
 
-    // Remove lines starting with '%'
-    lines = lines.filter(line => !line.trim().startsWith('%'))
+    // Check if the criterion exists in the database
+    for (let category in db) {
+      for (let subCategory in db[category]) {
+        if (db[category][subCategory][criterionLabel]) {
+          // Add annotations (excerpts) to the criterion's annotations array
+          if (cleanExcerpts && Array.isArray(cleanExcerpts)) {
+            db[category][subCategory][criterionLabel].Annotations.push(...cleanExcerpts)
+          }
 
-    // Join the lines back to form the document content without comments
-    let processedContent = lines.join('\n')
+          // Add improvement suggestion to the criterion
+          if (suggestion) {
+            db[category][subCategory][criterionLabel].ImprovementSuggestion = suggestion
+          }
+          if (sentiment) {
+            db[category][subCategory][criterionLabel].Assessment = sentiment
+          }
+          // Add effort level and description, if provided
+          if (effortLevel !== null) {
+            db[category][subCategory][criterionLabel]['Effort Value'] = effortLevel
+          }
 
-    // Use regex to remove the content between \begin{abstract} and \end{abstract}
-    const abstractRegex = /\\begin\{abstract\}[\s\S]*?\\end\{abstract\}/
+          if (effortDescription) {
+            db[category][subCategory][criterionLabel].EffortDescription = effortDescription
+          }
 
-    // Remove the abstract section from the content
-    processedContent = processedContent.replace(abstractRegex, '')
+          console.log(`Updated criterion: ${criterionLabel}`)
+          console.log(db[category][subCategory][criterionLabel])
+          return
+        }
+      }
+    }
 
-    // Remove excessive newlines (keep at most one consecutive newline)
-    processedContent = processedContent.replace(/\n\s*\n/g, '\n')
-
-    // Return the processed content without lines starting with '%' and the abstract section
-    return processedContent.trim()
+    // If criterion is not found
+    console.warn(`Criterion '${criterionLabel}' not found in the database.`)
   }
 }
 

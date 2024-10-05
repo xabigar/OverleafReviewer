@@ -1,9 +1,9 @@
 const CriterionActions = require('./CriterionActions')
-const OverleafUtils = require('./OverleafUtils')
 
 class OverleafManager {
   constructor () {
     this._project = null
+    this._sidebar = null
     this._currentCriteriaList = null
     this.criteriaDatabase = {
       'Engineering Research': {
@@ -430,71 +430,76 @@ class OverleafManager {
     // Use setInterval to check every second (1000ms)
     setInterval(() => {
       // Get all elements with the class 'ol-cm-command-promptex'
-      let elements = document.querySelectorAll('.ol-cm-command-promptex');
+      let elements = document.querySelectorAll('.ol-cm-command-promptex')
 
       elements.forEach((element) => {
         // Find the first .ol-cm-command-textit inside the element
-        let commandTextit = element.querySelector('.ol-cm-command-textit');
+        let commandTextit = element.querySelector('.ol-cm-command-textit')
 
         if (commandTextit) {
           // Extract the text content from the .ol-cm-command-textit element
-          let commandText = commandTextit.textContent;
+          let commandText = commandTextit.textContent
           let criterion = ''
           // Log the content for debugging
-          console.log('PrompTeX Command Found:', commandText);
+          console.log('PrompTeX Command Found:', commandText)
 
           // Check if the content matches the format 'text::number'
-          const match = commandText.match(/(.*)::(\d+)/);
+          const match = commandText.match(/(.*)::(\d+)/)
 
           if (match) {
-            criterion = match[1];
-            const number = parseInt(match[2], 10);
+            criterion = match[1]
+            const number = parseInt(match[2], 10)
 
             // Apply background color based on the number
             if (number === 0) {
-              element.style.backgroundColor = 'green'; // Set background to green
+              element.style.backgroundColor = 'green' // Set background to green
             } else if (number === 1) {
-              element.style.backgroundColor = 'yellow'; // Set background to yellow
+              element.style.backgroundColor = 'yellow' // Set background to yellow
             } else if (number === 2) {
-              element.style.backgroundColor = 'red'; // Set background to red
+              element.style.backgroundColor = 'red' // Set background to red
             } else {
-              element.style.backgroundColor = ''; // Reset background for other cases
+              element.style.backgroundColor = '' // Reset background for other cases
             }
           }
 
           // Set the display of the first .ol-cm-command-textit element to 'none'
-          commandTextit.style.display = 'none';
+          commandTextit.style.display = 'none'
           // Hide the first two .tok-punctuation.ol-cm-punctuation elements
-          const previousSibling = element.previousElementSibling;
-          const secondPreviousSibling = previousSibling?.previousElementSibling;
+          const previousSibling = element.previousElementSibling
+          const secondPreviousSibling = previousSibling?.previousElementSibling
           const nextSibling = element.nextElementSibling
           if (previousSibling && secondPreviousSibling) {
-            previousSibling.style.display = 'none'; // cm-matchingBracket
-            secondPreviousSibling.style.display = 'none'; // \promptex
-            nextSibling.style.display = 'none'; // cm-punctuation
+            previousSibling.style.display = 'none' // cm-matchingBracket
+            secondPreviousSibling.style.display = 'none' // \promptex
+            nextSibling.style.display = 'none' // cm-punctuation
             // firstBracket.style.display = 'none'; // cm-punctuation
+          }
+          if (secondPreviousSibling.textContent === 'ex') {
+            const thirdPreviousSibling = secondPreviousSibling.previousElementSibling
+            const forthPreviousSibling = thirdPreviousSibling.previousElementSibling
+            thirdPreviousSibling.style.display = 'none' // cm-punctuation
+            forthPreviousSibling.style.display = 'none' // cm-punctuation
           }
           // Select all elements with both classes 'tok-punctuation' and 'ol-cm-punctuation' inside the current item
           element.querySelectorAll('.tok-punctuation.ol-cm-punctuation').forEach(punctuationElement => {
             // Hide the punctuation element by setting display to 'none'
-            punctuationElement.style.display = 'none';
+            punctuationElement.style.display = 'none'
           })
           // Add tooltip to the element
           // if right-clicked, show a context menu
           let criterionElement = this.findCriterion(criterion)
-          element.title = 'This is a PrompTeX command: ' + criterionElement.Description;
-          element.addEventListener('contextmenu', function(event) {
-            event.preventDefault(); // Prevent the default right-click menu
+          element.title = 'This is a PrompTeX command: ' + criterionElement.Description
+          element.addEventListener('contextmenu', function (event) {
+            event.preventDefault() // Prevent the default right-click menu
 
             // Show alert with the tooltip message
-            alert('This is a PrompTeX command: ' + criterionElement.Description);
-            return false; // Additional return to ensure default action is canceled
-
+            alert('This is a PrompTeX command: ' + criterionElement.Description)
+            return false // Additional return to ensure default action is canceled
           })
           // element.title = criterion ? criterion.Description : 'No criterion found';
         }
-      });
-    }, 1000); // Every second
+      })
+    }, 1000) // Every second
   }
 
   findCriterion (text) {
@@ -503,12 +508,12 @@ class OverleafManager {
       for (const category in this.criteriaDatabase[list]) {
         for (const criterion in this.criteriaDatabase[list][category]) {
           if (criterion.toLowerCase() === text.toLowerCase()) {
-            return this.criteriaDatabase[list][category][criterion];
+            return this.criteriaDatabase[list][category][criterion]
           }
         }
       }
     }
-    return null;
+    return null
   }
 
   addButton () {
@@ -518,7 +523,7 @@ class OverleafManager {
     checkCriteriaButton.innerHTML = `
       <button type='button' class='btn btn-full-height' id='checkCriteriaBtn'>
         <i class='fa fa-check-square-o fa-fw' aria-hidden='true'></i>
-        <p class='toolbar-label'>Ask AI</p>
+        <p class='toolbar-label'>Ask PrompTeX</p>
       </button>
     `
     // Locate the toolbar where the button should be added
@@ -537,43 +542,7 @@ class OverleafManager {
     })
   }
 
-  wrapFirstChildTextInSpan (element) {
-    const firstChild = element.firstChild
-    // Check if the first child is a text node
-    if (firstChild && firstChild.nodeType === Node.TEXT_NODE) {
-      // Create a new span element
-      const span = document.createElement('span')
-      // Set the text content of the span to the firstChild's text content
-      span.textContent = firstChild.textContent
-      // Replace the text node with the span element
-      element.replaceChild(span, firstChild)
-      console.log('Wrapped the firstChild text inside a <span>.')
-    } else {
-      console.log('The first child is not a text node.')
-    }
-  }
-
-  getFirstElementOrTextNode (element) {
-    const firstChild = element.firstChild
-
-    if (firstChild) {
-      if (firstChild.nodeType === Node.ELEMENT_NODE && firstChild.tagName.toLowerCase() === 'span') {
-        console.log("The first child is a <span> element.")
-        return firstChild;
-      } else if (firstChild.nodeType === Node.TEXT_NODE) {
-        console.log("The first child is a text node.")
-        return firstChild;
-      } else {
-        console.log("The first child is neither a <span> nor a text node.")
-      }
-    } else {
-      console.log("The element has no children.")
-    }
-
-    return null; // If no matching node is found
-  }
-
-  addOutlineButton() {
+  addOutlineButton () {
     // Structure of the content you provided
     const outlineContent = {
       'Essential Attributes': ['Artifact', 'Evaluation'],
@@ -604,7 +573,7 @@ class OverleafManager {
 
     const headerTitle = document.createElement('h4')
     headerTitle.classList.add('outline-header-name')
-    headerTitle.textContent = 'Foundation outline' // Update title to "Foundation outline"
+    headerTitle.textContent = 'Content outline' // Update title to "Foundation outline"
 
     // Append the caret and title to the header button, and the button to the header
     headerButton.appendChild(caretIcon)
@@ -759,9 +728,8 @@ class OverleafManager {
       </div>
       <hr>
     `
-
       document.body.appendChild(sidebar)
-
+      this._sidebar = sidebar
       // Add event listener to the dropdown to dynamically load new criteria
       let selector = document.getElementById('criteriaSelector')
       selector.addEventListener('change', (event) => {
@@ -825,7 +793,7 @@ class OverleafManager {
         contentDiv.appendChild(categoryDiv) // Append category to the main content
 
         // Get the container for the buttons
-        let buttonsContainer = categoryDiv.querySelector('.criteria-buttons-container');
+        let buttonsContainer = categoryDiv.querySelector('.criteria-buttons-container')
 
         // Add buttons for each criterion under this category
         for (const criterionLabel in database[listName][category]) {
@@ -847,7 +815,7 @@ class OverleafManager {
           // Add right-click (contextmenu) functionality to the criterion button
           button.addEventListener('contextmenu', (event) => {
             this.showContextMenu(event, listName, category, criterion, criterionLabel)
-          });
+          })
 
           // Add click event to display the criterion details (Description, Assessment, Effort Value)
           button.addEventListener('click', () => {
@@ -865,8 +833,8 @@ class OverleafManager {
   }
 
   // New method to display criterion details
-  showCriterionDetails(label, criterion) {
-    alert(`Criterion: ${label}\nDescription: ${criterion.Description}\nAssessment: ${criterion.Assessment}\nEffort Value: ${criterion['Effort Value']}`);
+  showCriterionDetails (label, criterion) {
+    alert(`Criterion: ${label}\nDescription: ${criterion.Description}\nAssessment: ${criterion.Assessment}\nEffort Value: ${criterion['Effort Value']}`)
   }
 
   // Function to show the context menu
@@ -875,7 +843,7 @@ class OverleafManager {
     event.preventDefault()
 
     // Remove any existing context menu
-    const existingMenu = document.getElementById('contextMenu');
+    const existingMenu = document.getElementById('contextMenu')
     if (existingMenu) {
       existingMenu.remove()
     }
@@ -903,7 +871,7 @@ class OverleafManager {
 
     // Add event listeners for context menu options
     document.getElementById('assessCriterion').addEventListener('click', () => {
-      //alert(`Assessing: ${criterion}`)
+      // alert(`Assessing: ${criterion}`)
       CriterionActions.askCriterionAssessment(criterionLabel, criterion.Description)
       menu.remove() // Remove menu after selection
     })
@@ -915,7 +883,7 @@ class OverleafManager {
 
     document.getElementById('deleteCriterion').addEventListener('click', async () => {
       // this.deleteCriterion(listName, category, criterionLabel)
-      const documents = await OverleafUtils.getAllEditorContent()
+      // const documents = await OverleafUtils.getAllEditorContent()
       menu.remove() // Remove menu after selection
     })
 
@@ -933,7 +901,7 @@ class OverleafManager {
     if (newCriterionName && newCriterionName !== criterion) {
       const index = this.criteriaDatabase[listName][category].indexOf(criterion)
       this.criteriaDatabase[listName][category][index] = newCriterionName
-      this.loadCriteriaList(listName, this.criteriaDatabase); // Reload the list to reflect changes
+      this.loadCriteriaList(listName, this.criteriaDatabase) // Reload the list to reflect changes
     }
   }
 
@@ -949,7 +917,7 @@ class OverleafManager {
     }
   }
   // Function to add a new category to the selected criteria list
-  addNewCategory() {
+  addNewCategory () {
     let selectedList = document.getElementById('criteriaSelector').value
     let newCategoryName = prompt('Enter the name of the new category:')
 
@@ -973,7 +941,7 @@ class OverleafManager {
     }
   }
 
-  importNewCriteriaList() {
+  importNewCriteriaList () {
     let newListName = document.getElementById('newListName').value.trim()
     let newCategories = document.getElementById('newCategories').value.trim()
 
@@ -985,14 +953,14 @@ class OverleafManager {
         if (category && criteria) {
           parsedData[category.trim()] = criteria.split(',').map(c => c.trim())
         }
-      });
+      })
 
       // Add the new list to the criteria database
-      this.criteriaDatabase[newListName] = parsedData;
+      this.criteriaDatabase[newListName] = parsedData
 
       // Reload the dropdown to include the new list
       let selector = document.getElementById('criteriaSelector')
-      selector.innerHTML = Object.keys(this.criteriaDatabase).map(list => `<option value='${list}'>${list}</option>`).join('');
+      selector.innerHTML = Object.keys(this.criteriaDatabase).map(list => `<option value='${list}'>${list}</option>`).join('')
 
       // Hide the import form and reset its values
       document.getElementById('importForm').style.display = 'none'
@@ -1004,14 +972,14 @@ class OverleafManager {
   }
 
   // Helper function to generate random background color (optional)
-  getRandomColor() {
+  getRandomColor () {
     const colors = ['#f8c1c1', '#f9e09f', '#9fc9f8', '#f8c1f8', '#c1c1f8', '#d2c1a1', '#d1a19f', '#9fc1d2', '#c1f1c2', '#f8c7c1', '#a1c9f8']
     return colors[Math.floor(Math.random() * colors.length)]
   }
 
-  getProject() {
+  getProject () {
     // Get the current URL
-    let currentURL = window.location.href;
+    let currentURL = window.location.href
 
     // Use a regular expression to extract the project ID from the URL
     let projectID = currentURL.match(/project\/([a-zA-Z0-9]+)/)

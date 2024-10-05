@@ -66,41 +66,18 @@ class Utils {
       }
     }
   }
-
-  static reloadLabels () {
-    let button = document.querySelector('.addButton')
-    let button2 = document.querySelector('.addOwnButton')
-    let title = document.querySelector('.plusTitle')
-    let title2 = document.querySelector('.plusTitleOwn')
-    if (title && button) {
-      title.style.top = `${parseInt(button.style.top, 10) - 24}px`
-      title.style.left = `${parseInt(button.style.left, 10) + 42}px`
-    }
-    if (title2 && button2) {
-      title2.style.top = `${parseInt(button2.style.top, 10) - 24}px`
-      title2.style.left = `${parseInt(button2.style.left, 10) + 42}px`
+  static sentimentToNumber (sentiment) {
+    switch (sentiment) {
+      case 'green':
+        return 0
+      case 'yellow':
+        return 1
+      case 'red':
+        return 2
+      default:
+        return 1
     }
   }
-
-  static prettifyNodeText (text) {
-    const lineChars = 20
-    let newText = ''
-    let remainder = text
-    do {
-      newText = newText + remainder.substring(0, lineChars - 1)
-      remainder = remainder.substring(lineChars - 1)
-      let nextBlank = remainder.indexOf(' ')
-      if (nextBlank === -1) {
-        newText += remainder
-        remainder = ''
-      } else {
-        newText += remainder.substring(0, nextBlank) + '\n'
-        remainder = remainder.substring(nextBlank + 1)
-      }
-    } while (remainder.length > 0)
-    return newText
-  }
-
   static extractNumbersFromClassNames (text) {
     // Regular expression to match the desired pattern
     const regex = /react-popover-trigger-mapeditor-popover-contextmenu-attachment-(\d+)/g

@@ -2,7 +2,6 @@ const $ = require('jquery')
 const _ = require('lodash')
 window.$ = $
 
-
 if (window.location.href.includes('pages/options.html')) {
   const defaultLLM = { modelType: 'openAI', model: 'gpt-4' }
   const openAIModels = [
@@ -54,7 +53,7 @@ if (window.location.href.includes('pages/options.html')) {
   document.querySelector('#modelDropdown').addEventListener('change', (event) => {
     const selectedLLM = LLMDropdown.value
     const selectedModel = event.target.value
-    setLLM(selectedLLM, selectedModel)  // Update LLM with new model
+    setLLM(selectedLLM, selectedModel) // Update LLM with new model
   })
 
   chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getSelectedLLM' }, ({ llm = defaultLLM }) => {
@@ -77,7 +76,7 @@ if (window.location.href.includes('pages/options.html')) {
   }
 
   // Handle changes in the LLM provider (like openAI or Anthropic)
-  function handleLLMChange(selectedLLM) {
+  function handleLLMChange (selectedLLM) {
     // Show/hide API Key inputs based on selected LLM
     if (selectedLLM === 'openAI') {
       modelSelectionContainer.style.display = 'block'
@@ -120,7 +119,7 @@ if (window.location.href.includes('pages/options.html')) {
     }
   }
 
-  function populateModelDropdown(models) {
+  function populateModelDropdown (models) {
     // Clear the dropdown before populating it
     modelDropdown.innerHTML = ''
 
@@ -136,7 +135,7 @@ if (window.location.href.includes('pages/options.html')) {
     }
   }
 
-  function resetModelDropdown() {
+  function resetModelDropdown () {
     modelDropdown.innerHTML = '' // Reset by clearing all previous options
   }
 

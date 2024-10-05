@@ -175,6 +175,32 @@ class OverleafUtils {
     // Start the text insertion
     await writeText(content)
   }
+
+  static getActiveEditor () {
+    const codeEditor = document.getElementById('editor-switch-cm6')
+    const visualEditor = document.getElementById('editor-switch-rich-text')
+
+    if (codeEditor.checked) {
+      return 'Code Editor'
+    } else if (visualEditor.checked) {
+      return 'Visual Editor'
+    } else {
+      return 'No editor selected'
+    }
+  }
+
+  static toggleEditor () {
+    const codeEditor = document.getElementById('editor-switch-cm6')
+    const visualEditor = document.getElementById('editor-switch-rich-text')
+
+    if (codeEditor.checked) {
+      // Switch to Visual Editor
+      document.querySelector('label[for="editor-switch-rich-text"]').click()
+    } else if (visualEditor.checked) {
+      // Switch to Code Editor
+      document.querySelector('label[for="editor-switch-cm6"]').click()
+    }
+  }
 }
 
 module.exports = OverleafUtils
