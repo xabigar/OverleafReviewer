@@ -1,4 +1,5 @@
 const CriterionActions = require('./CriterionActions')
+const OverleafUtils = require('./OverleafUtils')
 
 class OverleafManager {
   constructor () {
@@ -424,6 +425,7 @@ class OverleafManager {
     that.addButton()
     that.addOutlineButton()
     that.monitorEditorContent()
+    this._currentCriteriaList =  Object.keys(this.criteriaDatabase)[0]
   }
 
   monitorEditorContent () {
@@ -542,40 +544,7 @@ class OverleafManager {
     })
   }
 
-  addButton () {
-    // Create the 'Check Criteria' button element
-    let checkCriteriaButton = document.createElement('div')
-    checkCriteriaButton.classList.add('toolbar-item')
-    checkCriteriaButton.innerHTML = `
-      <button type='button' class='btn btn-full-height' id='checkCriteriaBtn'>
-        <i class='fa fa-check-square-o fa-fw' aria-hidden='true'></i>
-        <p class='toolbar-label'>Ask PrompTeX</p>
-      </button>
-    `
-    // Locate the toolbar where the button should be added
-    let toolbar = document.querySelector('.toolbar-right')
-
-    // Insert the 'Check Criteria' button at the end of the toolbar list
-    if (toolbar) {
-      toolbar.appendChild(checkCriteriaButton)
-    } else {
-      console.error('Toolbar not found')
-    }
-
-    checkCriteriaButton.addEventListener('click', async () => {
-      // const content = await OverleafUtils.getAllEditorContent()
-      this.showCriteriaSidebar()
-    })
-  }
-
   addOutlineButton() {
-    // Structure of the content you provided
-    const outlineContent = {
-      'Essential Attributes': ['Artifact', 'Evaluation'],
-      'Desirable Attributes': ['Evaluation', 'Methodology'],
-      'Extraordinary Attributes': ['Innovation']
-    }
-
     // Create the container for the new outline
     const outlineContainer = document.querySelector('.outline-container')
 
@@ -634,7 +603,6 @@ class OverleafManager {
     newHeader.addEventListener('click', (event) => {
       event.stopPropagation() // Prevent interference with other outlines
       const isHidden = newHeader.classList.contains('closed');
-
       // Toggle between opened and closed state
       if (isHidden) {
         newHeader.classList.replace('closed', 'opened');
@@ -666,60 +634,61 @@ class OverleafManager {
 
           return li
         }
+        OverleafUtils.generateOutlineContent((outlineContent) => {
+          // Iterate through the content to build the outline
+          Object.keys(outlineContent).forEach((category) => {
+            // Create a parent item for each category
+            const categoryLi = document.createElement('li')
+            categoryLi.classList.add('outline-item')
+            categoryLi.setAttribute('role', 'treeitem')
+            categoryLi.setAttribute('aria-expanded', 'true')
 
-        // Iterate through the content to build the outline
-        Object.keys(outlineContent).forEach((category) => {
-          // Create a parent item for each category
-          const categoryLi = document.createElement('li')
-          categoryLi.classList.add('outline-item')
-          categoryLi.setAttribute('role', 'treeitem')
-          categoryLi.setAttribute('aria-expanded', 'true')
+            const categoryDiv = document.createElement('div')
+            categoryDiv.classList.add('outline-item-row')
 
-          const categoryDiv = document.createElement('div')
-          categoryDiv.classList.add('outline-item-row')
+            // Add expand/collapse button
+            const categoryButton = document.createElement('button')
+            categoryButton.classList.add('outline-item-expand-collapse-btn')
+            categoryButton.setAttribute('aria-label', 'Collapse')
+            categoryButton.setAttribute('aria-expanded', 'true') // Initially expanded
 
-          // Add expand/collapse button
-          const categoryButton = document.createElement('button')
-          categoryButton.classList.add('outline-item-expand-collapse-btn')
-          categoryButton.setAttribute('aria-label', 'Collapse')
-          categoryButton.setAttribute('aria-expanded', 'true') // Initially expanded
+            const categoryIcon = document.createElement('span')
+            categoryIcon.classList.add('material-symbols', 'outline-caret-icon')
+            categoryIcon.textContent = 'keyboard_arrow_down' // Default to expanded
+            categoryButton.appendChild(categoryIcon)
 
-          const categoryIcon = document.createElement('span')
-          categoryIcon.classList.add('material-symbols', 'outline-caret-icon')
-          categoryIcon.textContent = 'keyboard_arrow_down' // Default to expanded
-          categoryButton.appendChild(categoryIcon)
+            const categoryTitle = document.createElement('button')
+            categoryTitle.classList.add('outline-item-link')
+            categoryTitle.textContent = category
 
-          const categoryTitle = document.createElement('button')
-          categoryTitle.classList.add('outline-item-link')
-          categoryTitle.textContent = category
+            categoryDiv.appendChild(categoryButton)
+            categoryDiv.appendChild(categoryTitle)
+            categoryLi.appendChild(categoryDiv)
 
-          categoryDiv.appendChild(categoryButton)
-          categoryDiv.appendChild(categoryTitle)
-          categoryLi.appendChild(categoryDiv)
+            // Add sub-items (attributes)
+            const subList = document.createElement('ul')
+            subList.classList.add('outline-item-list')
+            subList.setAttribute('role', 'group')
 
-          // Add sub-items (attributes)
-          const subList = document.createElement('ul')
-          subList.classList.add('outline-item-list')
-          subList.setAttribute('role', 'group')
+            outlineContent[category].forEach((subItem) => {
+              subList.appendChild(createListItem(subItem))
+            })
 
-          outlineContent[category].forEach((subItem) => {
-            subList.appendChild(createListItem(subItem))
+            categoryLi.appendChild(subList)
+            rootList.appendChild(categoryLi)
+
+            // Toggle sub-list visibility on category click
+            categoryButton.addEventListener('click', () => {
+              const isExpanded = categoryLi.getAttribute('aria-expanded') === 'true'
+              categoryLi.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')
+              subList.style.display = isExpanded ? 'none' : 'block'
+              categoryIcon.textContent = isExpanded ? 'keyboard_arrow_right' : 'keyboard_arrow_down'
+              categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
+            })
           })
-
-          categoryLi.appendChild(subList)
-          rootList.appendChild(categoryLi)
-
-          // Toggle sub-list visibility on category click
-          categoryButton.addEventListener('click', () => {
-            const isExpanded = categoryLi.getAttribute('aria-expanded') === 'true'
-            categoryLi.setAttribute('aria-expanded', isExpanded ? 'false' : 'true')
-            subList.style.display = isExpanded ? 'none' : 'block'
-            categoryIcon.textContent = isExpanded ? 'keyboard_arrow_right' : 'keyboard_arrow_down'
-            categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
-          })
+          // Add the outline body to the pane, and let it push content down
+          newOutlinePane.appendChild(outlineBody);
         })
-        // Add the outline body to the pane, and let it push content down
-        newOutlinePane.appendChild(outlineBody);
       } else {
         newHeader.classList.replace('opened', 'closed');
         const outlineBody = newOutlinePane.querySelector('.outline-body');
@@ -733,7 +702,7 @@ class OverleafManager {
     })
   }
 
-  showCriteriaSidebar (defaultList = 'Engineering Research') {
+  showCriteriaSidebar (defaultList = 0) {
     // Check if the sidebar already exists
     let existingSidebar = document.getElementById('criteriaSidebar')
 
@@ -776,6 +745,7 @@ class OverleafManager {
       })
       if (!this._currentCriteriaList) {
         // Load the default list (first list) when the sidebar first opens
+        let defaultList = Object.keys(this.criteriaDatabase)[0]
         this.loadCriteriaList(defaultList, this.criteriaDatabase)
       }
 

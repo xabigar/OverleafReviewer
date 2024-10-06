@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 class OverleafUtils {
   static async getAllEditorContent () {
     let onTop = false
@@ -15,7 +17,7 @@ class OverleafUtils {
     function scrollEditor (position) {
       return new Promise((resolve) => {
         editorContainer.scrollTo({ top: position })
-        setTimeout(resolve, 250)
+        setTimeout(resolve, 100)
       })
     }
 
@@ -199,6 +201,82 @@ class OverleafUtils {
     } else if (visualEditor.checked) {
       // Switch to Code Editor
       document.querySelector('label[for="editor-switch-cm6"]').click()
+    }
+  }
+  static async generateOutlineContent (callback) {
+    let editor = OverleafUtils.getActiveEditor();
+    if (editor === 'Visual Editor') {
+      OverleafUtils.toggleEditor();
+    }
+
+    // read the document content
+    const documents = await OverleafUtils.getAllEditorContent();
+
+    // get all \promptex commands with their arguments
+    const promptexCommands = documents.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/g);
+
+    // retrieve the database and current criteria list
+    let db = window.promptex._overleafManager.criteriaDatabase;
+    let currentCriteriaList = window.promptex._overleafManager._currentCriteriaList;
+
+    // Clear all annotations in the database for the specific category in currentCriteriaList before adding new ones
+    if (db[currentCriteriaList]) {
+      for (let attributeType in db[currentCriteriaList]) {
+        for (let criterion in db[currentCriteriaList][attributeType]) {
+          db[currentCriteriaList][attributeType][criterion].Annotations = []; // Reset the Annotations array
+        }
+      }
+    }
+
+    // For each \promptex command, extract the criterion label and the excerpt (second argument)
+    const criterionAnnotations = promptexCommands.map(command => {
+      // Updated regex pattern to capture the label, number, and excerpt
+      const match = command.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/);
+
+      return {
+        label: match ? match[1] : null,  // Capture the criterion label (part before "::")
+        number: match ? match[2] : null, // Capture the number (part after "::")
+        excerpt: match ? match[3] : null  // Capture the excerpt (second argument)
+      };
+    }).filter(item => item.label !== null && item.excerpt !== null);
+
+    // Add the annotations to the database only for the currentCriteriaList category
+    criterionAnnotations.forEach(({ label, excerpt }) => {
+      if (db[currentCriteriaList]) {
+        for (let attributeType in db[currentCriteriaList]) {
+          if (db[currentCriteriaList][attributeType][label]) {
+            // Push the excerpt into the Annotations array
+            db[currentCriteriaList][attributeType][label].Annotations.push(excerpt);
+          }
+        }
+      }
+    });
+
+    const outlineContent = {};
+
+    // Iterate through each attribute type (e.g., 'Essential Attributes', 'Desirable Attributes')
+    if (db[currentCriteriaList]) {
+      for (let attributeType in db[currentCriteriaList]) {
+        // Iterate through each criterion in the attribute type
+        for (let criterion in db[currentCriteriaList][attributeType]) {
+          const criterionData = db[currentCriteriaList][attributeType][criterion];
+          const annotationCount = criterionData.Annotations.length;
+          // If the criterion has annotations, we add it to the corresponding category in outlineContent
+          if (annotationCount > 0) {
+            // If the category doesn't exist in outlineContent yet, initialize it as an array
+            if (!outlineContent[attributeType]) {
+              outlineContent[attributeType] = [];
+            }
+            // Add the criterion with its annotation count to the category in outlineContent
+            outlineContent[attributeType].push(`${criterion} (${annotationCount})`);
+          }
+        }
+      }
+    }
+
+    // Return the resulting outlineContent
+    if (_.isFunction(callback))  {
+      callback(outlineContent)
     }
   }
 }
