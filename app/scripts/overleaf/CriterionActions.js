@@ -13,20 +13,20 @@ class CriterionActions {
       OverleafUtils.toggleEditor()
     }
     window.promptex._overleafManager._sidebar.remove()
-    Alerts.showLoadingWindow('Reading document content...')
+    Alerts.showLoadingWindowDuringProcess('Reading document content...')
     const documents = await OverleafUtils.getAllEditorContent()
     let prompt = Config.prompts.annotatePrompt
     prompt = prompt.replace('[C_NAME]', criterionLabel)
     prompt = prompt.replace('[C_DESCRIPTION]', description)
     prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' + prompt
     Alerts.closeLoadingWindow()
-    Alerts.showLoadingWindow('Retrieving API key...')
+    Alerts.showLoadingWindowDuringProcess('Retrieving API key...')
     chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getSelectedLLM' }, async ({ llm }) => {
       if (llm === '') {
         llm = Config.review.defaultLLM
       }
       const llmProvider = llm.modelType
-      Alerts.showLoadingWindow('Waiting for ' + llmProvider.charAt(0).toUpperCase() + llmProvider.slice(1) + 's answer. It can take time...')
+      Alerts.showLoadingWindowDuringProcess('Waiting for ' + llmProvider.charAt(0).toUpperCase() + llmProvider.slice(1) + 's answer. It can take time...')
       chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getAPIKEY', data: llmProvider }, ({ apiKey }) => {
         if (apiKey !== null && apiKey !== '') {
           let callback = (json) => {

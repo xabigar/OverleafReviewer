@@ -37,6 +37,31 @@ header.outline-header.opened h4 {
   visibility: visible; /* Ensure it's visible */
 }
 
+body[data-loading="true"] {
+  pointer-events: none;  /* Disable all interaction */
+  overflow: hidden;      /* Disable scrolling */
+}
+
+/* Loading overlay */
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);  /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  visibility: hidden;  /* Hidden by default */
+}
+
+/* Show the overlay when data-loading is true */
+body[data-loading="true"] #loading-overlay {
+  visibility: visible;  /* Show overlay */
+}
+
 .outline-header-name2 {
   color: #fff;
   display: inline-block;

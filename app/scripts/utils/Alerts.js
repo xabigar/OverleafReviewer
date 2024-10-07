@@ -126,6 +126,23 @@ class Alerts {
     })
   }
 
+  static showLoadingWindowDuringProcess (content) {
+    swal.fire({
+      title: 'Loading',
+      html: content,
+      toast: true,
+      backdrop: 'rgba(0, 0, 0, 0.8)', // Darkens the background more
+      allowOutsideClick: false, // Prevents clicking outside to close the modal
+      position: 'bottom-end',
+      showConfirmButton: false,
+      showCancelButton: false,
+      customClass: 'custom-loading-toast',
+      onBeforeOpen: () => {
+        swal.showLoading()
+      }
+    })
+  }
+
   static closeLoadingWindow () {
     swal.hideLoading()
     swal.close()
