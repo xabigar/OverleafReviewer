@@ -268,14 +268,14 @@ class OverleafUtils {
               outlineContent[attributeType] = [];
             }
             // Add the criterion with its annotation count to the category in outlineContent
-            outlineContent[attributeType].push(`${criterion} (${annotationCount})`);
+            outlineContent[attributeType].push(`${criterion} (${annotationCount})`)
           }
         }
       }
     }
 
     // Return the resulting outlineContent
-    if (_.isFunction(callback))  {
+    if (_.isFunction(callback)) {
       callback(outlineContent)
     }
   }

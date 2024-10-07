@@ -1,5 +1,6 @@
 const CriterionActions = require('./CriterionActions')
 const OverleafUtils = require('./OverleafUtils')
+const Alerts = require('../utils/Alerts')
 
 class OverleafManager {
   constructor () {
@@ -12,49 +13,57 @@ class OverleafManager {
           'Artifact Detail': {
             'Description': 'Describes the proposed artifact in adequate detail.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Artifact Need': {
             'Description': 'Justifies the need for, usefulness of, or relevance of the proposed artifact.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Artifact Evaluation': {
             'Description': 'Conceptually evaluates the proposed artifact; discusses its strengths, weaknesses and limitations.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Empirical Evaluation': {
             'Description': 'Empirically evaluates the artifact using various methods: action research, case study, controlled experiment, simulation, benchmarking, or other methods.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Methodology Used': {
             'Description': 'Clearly indicates which empirical methodology is used.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Compare Alternatives': {
             'Description': 'Discusses or compares state-of-the-art alternatives and their strengths, weaknesses, or limitations.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Assumptions': {
             'Description': 'Assumptions are explicit, plausible, and align with the contributions goals.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Consistent Notation': {
             'Description': 'Uses notation consistently throughout.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -62,37 +71,43 @@ class OverleafManager {
           'Supplementary Materials': {
             'Description': 'Provides supplementary materials such as source code, description of the artifact, or input datasets.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Missing Justification': {
             'Description': 'Justifies any missing items from the replication package based on practical or ethical grounds.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Artifact Theory': {
             'Description': 'Discusses the theoretical basis of the artifact.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Correctness Proofs': {
             'Description': 'Provides correctness arguments for key contributions (e.g., theorems, complexity analyses).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Running Examples': {
             'Description': 'Includes running examples to elucidate the artifact.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Industry Evaluation': {
             'Description': 'Evaluates the artifact in an industry-relevant context (e.g., open-source projects).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -100,13 +115,15 @@ class OverleafManager {
           'Design Practices': {
             'Description': 'Contributes to understanding of design practices or principles.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Ground-breaking Innovations': {
             'Description': 'Presents ground-breaking innovations with real-world benefits.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         }
@@ -116,79 +133,92 @@ class OverleafManager {
           'Justifies Site Selection': {
             'Description': 'Justifies the selection of the site(s) that was(were) studied.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Sites in Rich Detail': {
             'Description': 'Describes the site(s) in rich detail.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Researcher-Host Relationship': {
             'Description': 'Describes the relationship between the researcher and the host organization.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Intervention in Detail': {
             'Description': 'Describes the intervention(s) in detail.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes How Interventions Were Determined': {
             'Description': 'Describes how interventions were determined (e.g. by management, researchers, or a participative/co-determination process).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Explains Intervention Evaluation': {
             'Description': 'Explains how the interventions are evaluated.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Longitudinal Dimension': {
             'Description': 'Describes the longitudinal dimension of the research design (including the length of the study).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Researcher-Host Interactions': {
             'Description': 'Describes the interactions between researcher(s) and host organization(s).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Explains Research Cycles or Phases': {
             'Description': 'Explains research cycles or phases, if any, and their relationship to the intervention(s).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Presents Clear Chain of Evidence': {
             'Description': 'Presents a clear chain of evidence from observations to findings.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Reports Participant or Stakeholder Reactions': {
             'Description': 'Reports participant or stakeholder reactions to interventions.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Reports Lessons Learned': {
             'Description': 'Reports lessons learned by the organization.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Researchers Reflect on Biases': {
             'Description': 'Researchers reflect on their own possible biases.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -196,31 +226,36 @@ class OverleafManager {
           'Provides Supplemental Materials': {
             'Description': 'Provides supplemental materials such as interview guide(s), coding schemes, coding examples, decision rules, or extended chain-of-evidence tables.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Uses Direct Quotations Extensively': {
             'Description': 'Uses direct quotations extensively.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Validates Results Using Member Checking': {
             'Description': 'Validates results using member checking, dialogical interviewing, feedback from non-participant practitioners or research audits of coding by advisors or other researchers.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Findings Transferable to Other Contexts': {
             'Description': 'Findings plausibly transferable to other contexts.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Triangulation Across Data Types': {
             'Description': 'Triangulation across quantitative and qualitative data.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -228,7 +263,8 @@ class OverleafManager {
           'Research Team with Triangulation': {
             'Description': 'Research team with triangulation across researchers to mitigate researcher bias.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         }
@@ -238,49 +274,57 @@ class OverleafManager {
           'Explains How Interviewees Were Selected': {
             'Description': 'Explains how interviewees were selected.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Interviewees': {
             'Description': 'Describes interviewees (e.g. demographics, work roles).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Interviewers': {
             'Description': 'Describes interviewer(s) (e.g. experience, perspective).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Presents Clear Chain of Evidence': {
             'Description': 'Presents clear chain of evidence from interviewee quotations to findings (e.g. proposed concepts).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Clearly Answers Research Question': {
             'Description': 'Clearly answers the research question(s).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Provides Evidence of Saturation': {
             'Description': 'Provides evidence of saturation; explains how saturation was achieved.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Researchers Reflect on Biases': {
             'Description': 'Researchers reflect on their own possible biases.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Identifies Key Issues': {
             'Description': 'Identifies key issues under consideration.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -288,85 +332,99 @@ class OverleafManager {
           'Provides Supplemental Materials': {
             'Description': 'Provides supplemental materials including interview guide(s), coding schemes, coding examples, decision rules, or extended chain-of-evidence table(s).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Questions Asked': {
             'Description': 'Describes questions asked in data collection: content of central questions, form of questions (e.g. open vs. closed).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Includes Diverse Participants': {
             'Description': 'Includes highly diverse participants.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Researcher-Participant Interaction': {
             'Description': 'Describes the relationships and interactions between researchers and participants relevant to the research process.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Uses Direct Quotations Extensively': {
             'Description': 'Uses direct quotations extensively to support key points.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Identifies Data Recording Methods': {
             'Description': 'Identifies data recording methods (audio/visual), field notes or transcription processes used.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Evaluates or Develops Theory': {
             'Description': 'EITHER: Evaluates an a priori theory (or model, framework, taxonomy, etc.) using deductive coding with an a priori coding scheme, OR: synthesizes results into a new theory using inductive coding.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Validates Results': {
             'Description': 'Validates results using member checking, dialogical interviewing, feedback from non-participant practitioners or research audits of coding by advisors or other researchers.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Discusses Transferability': {
             'Description': 'Discusses transferability; findings plausibly transferable to different contexts.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Compares Results with Prior Research': {
             'Description': 'Compares results with (or integrates them into) prior theory or related research.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Reflects on Alternative Explanations': {
             'Description': 'Reflects on any alternative explanations of the findings.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Provides Contextual Information': {
             'Description': 'Provides relevant contextual information for findings.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Reflects on Bias in Analysis': {
             'Description': 'Reflects on how researchers’ biases may have affected their analysis.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Describes Ethics and Compensation': {
             'Description': 'Describes any incentives or compensation, and provides assurance of relevant ethical processes of data collection and consent process as relevant.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         },
@@ -374,25 +432,29 @@ class OverleafManager {
           'Employs Multiple Methods of Data Analysis': {
             'Description': 'Employs multiple methods of data analysis (e.g. open coding vs. process coding; manual coding vs. automated sentiment analysis) with method-triangulation.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Employs Longitudinal Design': {
             'Description': 'Employs longitudinal design (i.e. each interviewee participates multiple times) and analysis.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Employs Probabilistic Sampling Strategy': {
             'Description': 'Employs probabilistic sampling strategy; statistical analysis of response bias.',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           },
           'Uses Multiple Coders': {
             'Description': 'Uses multiple coders and analyzes inter-coder reliability (see IRR/IRA Supplement).',
             'Assessment': null,
-            'Effort Value': null,
+            'EffortValue': null,
+            'EffortDescription': null,
             'Annotations': []
           }
         }
@@ -476,7 +538,7 @@ class OverleafManager {
             nextSibling.style.display = 'none' // cm-punctuation
             // firstBracket.style.display = 'none'; // cm-punctuation
           }
-          if (secondPreviousSibling.textContent === 'ex') {
+          if (secondPreviousSibling && secondPreviousSibling.textContent && secondPreviousSibling.textContent === 'ex') {
             const thirdPreviousSibling = secondPreviousSibling.previousElementSibling
             const forthPreviousSibling = thirdPreviousSibling.previousElementSibling
             thirdPreviousSibling.style.display = 'none' // cm-punctuation
@@ -490,18 +552,32 @@ class OverleafManager {
           // Add tooltip to the element
           // if right-clicked, show a context menu
           let criterionElement = this.findCriterion(criterion)
-          element.title = 'This is a PrompTeX command: ' + criterionElement.Description
+          element.title = 'This highlight is associated with ' + criterion + '\n'
+          if (criterionElement && criterionElement.ImprovementSuggestion) {
+            element.title += 'This is a suggestion for improvement: ' + criterionElement.ImprovementSuggestion
+            if (criterionElement.EffortValue && criterionElement.EffortDescription) {
+              element.title += '\nEffort Level: ' + criterionElement.EffortValue
+              element.title += '\nEffort Description: ' + criterionElement.EffortDescription
+            }
+          }
           element.addEventListener('contextmenu', function (event) {
             event.preventDefault() // Prevent the default right-click menu
-
+            let info = 'This highlight is associated with ' + criterion + '\n'
+            if (criterionElement && criterionElement.ImprovementSuggestion) {
+              info += 'This is a suggestion for improvement: ' + criterionElement.ImprovementSuggestion
+              if (criterionElement.EffortValue && criterionElement.EffortDescription) {
+                info += '\nEffort Level: ' + criterionElement.EffortValue
+                info += '\nEffort Description: ' + criterionElement.EffortDescription
+              }
+            }
             // Show alert with the tooltip message
-            alert('This is a PrompTeX command: ' + criterionElement.Description)
+            Alerts.infoAlert({title: 'Criterion Information', text: info})
             return false // Additional return to ensure default action is canceled
           })
           // element.title = criterion ? criterion.Description : 'No criterion found';
         }
       })
-    }, 1000) // Every second
+    }, 500) // Every second
   }
 
   findCriterion (text) {
@@ -568,8 +644,8 @@ class OverleafManager {
     caretIcon.textContent = 'keyboard_arrow_right' // Initially right arrow (collapsed)
 
     const headerTitle = document.createElement('h4')
-    headerTitle.classList.add('outline-header-name')
-    headerTitle.textContent = 'Foundation outline' // Update title to "Foundation outline"
+    headerTitle.classList.add('outline-header-name2')
+    headerTitle.textContent = 'Rhetorical outline' // Update title to "Foundation outline"
 
     // Append the caret and title to the header button, and the button to the header
     headerButton.appendChild(caretIcon)
@@ -592,11 +668,8 @@ class OverleafManager {
     const outlinePanes = document.querySelectorAll('.outline-pane')
 
     // Set height for each pane to split space equally
-    /* outlinePanes.forEach(pane => {
-      pane.style.height = '50%'
-    }) */
     outlinePanes.forEach(pane => {
-      pane.style.height = 'auto'
+      pane.style.height = '50%'
     })
 
     // Handle header click to show/hide the outline body of THIS outline only
@@ -686,14 +759,52 @@ class OverleafManager {
               categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
             })
           })
+          let treeDiv = document.getElementById('panel-file-tree');
+          // Change the data-panel-size attribute
+          treeDiv.setAttribute('data-panel-size', '80.5'); // You can set it to any value
+          // Change the flex style property
+          treeDiv.style.flex = '80.5 1 0px'; // Update the first number to match the new panel size
+          let separator = treeDiv.nextElementSibling
+          // Change the 'data-panel-resize-handle-enabled' attribute to 'true'
+          separator.setAttribute('data-panel-resize-handle-enabled', 'true');
+          // Change the 'aria-valuenow' attribute to '55'
+          separator.setAttribute('aria-valuenow', '80');
+          // Select the inner div with the class 'vertical-resize-handle'
+          const innerHandle = separator.querySelector('.vertical-resize-handle');
+          // Mouse down starts the resizing
+          let isResizing = false;
+          innerHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'row-resize'; // Change the cursor when resizing
+          });
+          document.addEventListener('mousemove', (e) => {
+            if (isResizing) {
+              const panelOutline = document.getElementById('panel-outline');
+              const newSize = e.clientY; // Use the Y position of the mouse to calculate the new size
+              panelOutline.style.flex = `${newSize} 1 0px`; // Adjust flex-grow property dynamically
+              panelOutline.setAttribute('data-panel-size', newSize); // Update the data attribute
+            }
+          });
+          document.addEventListener('mouseup', () => {
+            isResizing = false;
+            document.body.style.cursor = 'default'; // Reset the cursor
+          });
+          // Add the 'vertical-resize-handle-enabled' class to the inner div
+          innerHandle.classList.add('vertical-resize-handle-enabled');
+          let panelOutline = separator.nextElementSibling;
+          // Change the 'data-panel-size' attribute to '44.8'
+          panelOutline.setAttribute('data-panel-size', '44.8');
+          // Change the 'flex' value in the style property
+          panelOutline.style.flex = '44.8 1 0px';
           // Add the outline body to the pane, and let it push content down
-          newOutlinePane.appendChild(outlineBody);
+          newOutlinePane.appendChild(outlineBody)
+
+
         })
       } else {
         newHeader.classList.replace('opened', 'closed');
         const outlineBody = newOutlinePane.querySelector('.outline-body');
         if (outlineBody) {
-          outlineBody.style.display = 'none'; // Collapse the body
           newOutlinePane.removeChild(outlineBody); // Remove from DOM
         }
       }

@@ -22,7 +22,7 @@ class DBManager {
           }
           // Add effort level and description, if provided
           if (effortLevel !== null) {
-            db[category][subCategory][criterionLabel]['Effort Value'] = effortLevel
+            db[category][subCategory][criterionLabel].EffortValue = effortLevel
           }
 
           if (effortDescription) {

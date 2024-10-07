@@ -12,6 +12,7 @@ class CriterionActions {
     if (editor === 'Visual Editor') {
       OverleafUtils.toggleEditor()
     }
+    window.promptex._overleafManager._sidebar.remove()
     Alerts.showLoadingWindow('Reading document content...')
     const documents = await OverleafUtils.getAllEditorContent()
     let prompt = Config.prompts.annotatePrompt

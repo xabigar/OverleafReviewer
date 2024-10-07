@@ -31,7 +31,7 @@ class LatexUtils {
   static addCommentsToLatex (originalLatex, excerpts, suggestion, sentiment, criterionLabel) {
     let sentimentColor = Utils.sentimentToNumber(sentiment.toLowerCase())
     excerpts.forEach(excerpt => {
-      let commentCommand = `\\promptex{\\textit{${criterionLabel}::${sentimentColor}}}{${excerpt}}`
+      let commentCommand = `\\promptex{\\textit{${criterionLabel}::${sentimentColor}}}{${excerpt}}\n`
       // Add the \mycomment after each occurrence of the excerpt in the latex file
       originalLatex = originalLatex.replace(excerpt, `${commentCommand}`)
     })
