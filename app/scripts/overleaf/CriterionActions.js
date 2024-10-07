@@ -3,7 +3,6 @@ const Config = require('../Config')
 const Alerts = require('../utils/Alerts')
 const LLMClient = require('../llm/LLMClient')
 const LatexUtils = require('./LatexUtils')
-const DBManager = require('./DBManager')
 
 class CriterionActions {
   static async askCriterionAssessment (criterionLabel, description) {
@@ -26,7 +25,7 @@ class CriterionActions {
         llm = Config.review.defaultLLM
       }
       const llmProvider = llm.modelType
-      Alerts.showLoadingWindowDuringProcess('Waiting for ' + llmProvider.charAt(0).toUpperCase() + llmProvider.slice(1) + 's answer. It can take time...')
+      Alerts.showLoadingWindowDuringProcess('Waiting ' + llmProvider.charAt(0).toUpperCase() + llmProvider.slice(1) + ' to answer...')
       chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getAPIKEY', data: llmProvider }, ({ apiKey }) => {
         if (apiKey !== null && apiKey !== '') {
           let callback = (json) => {
@@ -49,13 +48,21 @@ class CriterionActions {
             let sentiment = json.sentiment
             let effortLevel = json.effortLevel
             let effortDescription = json.effortDescription
-            let newContent = LatexUtils.addCommentsToLatex(documents, cleanExcerpts, suggestion, sentiment, criterionLabel)
-            newContent = LatexUtils.ensurePromptexCommandExists(newContent)
-            OverleafUtils.removeContent(() => {
-              DBManager.saveCriterionAssessment(criterionLabel, description, cleanExcerpts, suggestion, sentiment, effortLevel, effortDescription)
-              window.promptex._overleafManager._sidebar.remove()
-              OverleafUtils.insertContent(newContent)
-            })
+            // Call CriteriaDatabaseClient to update the criterion
+            let listName = window.promptex._overleafManager._currentCriteriaList
+            window.promptex.storageManager.client.updateCriterion(listName, criterionLabel, cleanExcerpts, suggestion, sentiment, effortLevel, effortDescription)
+              .then(() => {
+                console.log('Criterion updated successfully')
+                let newContent = LatexUtils.addCommentsToLatex(documents, cleanExcerpts, suggestion, sentiment, criterionLabel)
+                newContent = LatexUtils.ensurePromptexCommandExists(newContent)
+                OverleafUtils.removeContent(() => {
+                  window.promptex._overleafManager._sidebar.remove()
+                  OverleafUtils.insertContent(newContent)
+                }).catch(err => {
+                  console.error('Failed to update criterion:', err)
+                  console.log('Failed to update criterion')
+                })
+              })
           }
           LLMClient.simpleQuestion({
             apiKey: apiKey,

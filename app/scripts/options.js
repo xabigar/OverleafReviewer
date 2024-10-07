@@ -64,6 +64,7 @@ if (window.location.href.includes('pages/options.html')) {
   })
 
   // Update LLM (both provider and model)
+  // eslint-disable-next-line no-inner-declarations
   function setLLM (llmProvider, model) {
     chrome.runtime.sendMessage({
       scope: 'llm',
@@ -76,6 +77,7 @@ if (window.location.href.includes('pages/options.html')) {
   }
 
   // Handle changes in the LLM provider (like openAI or Anthropic)
+  // eslint-disable-next-line no-inner-declarations
   function handleLLMChange (selectedLLM) {
     // Show/hide API Key inputs based on selected LLM
     if (selectedLLM === 'openAI') {
@@ -119,6 +121,7 @@ if (window.location.href.includes('pages/options.html')) {
     }
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function populateModelDropdown (models) {
     // Clear the dropdown before populating it
     modelDropdown.innerHTML = ''
@@ -135,6 +138,7 @@ if (window.location.href.includes('pages/options.html')) {
     }
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function resetModelDropdown () {
     modelDropdown.innerHTML = '' // Reset by clearing all previous options
   }
@@ -158,6 +162,7 @@ if (window.location.href.includes('pages/options.html')) {
     })
   })
 
+  // eslint-disable-next-line no-inner-declarations
   function setAPIKey (selectedLLM, apiKey) {
     chrome.runtime.sendMessage({
       scope: 'llm',

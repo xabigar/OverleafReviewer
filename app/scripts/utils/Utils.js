@@ -10,6 +10,26 @@ class Utils {
   static sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
+  // Helper function to darken a color
+  static darkenColor (color, percentage) {
+    let f = parseInt(color.slice(1), 16)
+    let t = percentage < 0 ? 0 : 255
+    let p = percentage < 0 ? percentage * -1 : percentage
+    let R = f >> 16
+    let G = (f >> 8) & 0x00FF
+    let B = f & 0x0000FF
+    return (
+      '#' +
+      (
+        0x1000000 +
+        (Math.round((t - R) * p) + R) * 0x10000 +
+        (Math.round((t - G) * p) + G) * 0x100 +
+        (Math.round((t - B) * p) + B)
+      )
+        .toString(16)
+        .slice(1)
+    )
+  }
   static async performRequest (opts, reqOptions = {remainingAttempts: 4, attempt: 0}) {
     let that = this
     let url = opts.url

@@ -12,7 +12,7 @@ class LocalStorageManager {
 
   // Initialize the storage manager for a specific project and retrieve the database
   init (projectId, callback) {
-    const storageKey = `db.criteriaSchemas.${projectId}`; // Unique storage key for each project
+    const storageKey = `db.criteriaSchemas.${projectId}` // Unique storage key for each project
     ChromeStorage.getData(storageKey, ChromeStorage.local, (err, data) => {
       if (err) {
         callback(err)
@@ -69,7 +69,7 @@ class LocalStorageManager {
 
   // Clean the criterion schema database for a specific project (reset to default)
   cleanDatabase (projectId, callback) {
-    const storageKey = `db.criteriaSchemas.${projectId}`; // Unique storage key for each project
+    const storageKey = `db.criteriaSchemas.${projectId}` // Unique storage key for each project
     ChromeStorage.setData(storageKey, 1, ChromeStorage.local, (err) => {
       if (_.isFunction(callback)) {
         if (err) {
@@ -78,7 +78,7 @@ class LocalStorageManager {
           callback(null)
         }
       }
-    });
+    })
   }
 }
 

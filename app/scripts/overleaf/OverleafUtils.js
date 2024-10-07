@@ -197,23 +197,23 @@ class OverleafUtils {
         }
         // Loop over the line numbers and match with the text content
         for (let index = 0; index < myLineNumbers.length; index++) {
-          const lineNumber = myLineNumbers[index];
-          const text = myText[index]; // Get the corresponding text for this line number
+          const lineNumber = myLineNumbers[index]
+          const text = myText[index] // Get the corresponding text for this line number
 
           if (lineNumber && !capturedLineNumbers.has(lineNumber)) {
             if (text) {
-              contentLines.push(`${lineNumber}: ${text}`); // Add the line number and the corresponding text
+              contentLines.push(`${lineNumber}: ${text}`) // Add the line number and the corresponding text
               if (text.includes(textToFind)) {
-                navigationIndex++;
+                navigationIndex++
                 if (navigationIndex === navigation) {
-                  console.log('Found the text in line: ' + lineNumber + ' text: ' + text);
-                  return true; // Return true to stop the outer loop
+                  console.log('Found the text in line: ' + lineNumber + ' text: ' + text)
+                  return true // Return true to stop the outer loop
                 }
               }
             } else {
-              contentLines.push(`${lineNumber}: \n`); // Handle the empty text case
+              contentLines.push(`${lineNumber}: \n`) // Handle the empty text case
             }
-            capturedLineNumbers.add(lineNumber); // Mark the line number as captured
+            capturedLineNumbers.add(lineNumber) // Mark the line number as captured
           }
         }
         return false
@@ -235,7 +235,7 @@ class OverleafUtils {
         break
       }
     }
-    // OverleafUtils.toggleEditor()
+    OverleafUtils.toggleEditor()
   }
 
   static async removeContent (callback) {
@@ -297,7 +297,7 @@ class OverleafUtils {
       const lines = text.split('\n')
       for (let line of lines) {
         insertTextAtCursor(line + '\n')
-        await new Promise((resolve) => setTimeout(resolve, 5)) // Simulate typing delay
+        // await new Promise((resolve) => setTimeout(resolve, 5)) // Simulate typing delay
       }
     }
 
@@ -331,26 +331,26 @@ class OverleafUtils {
     }
   }
   static async generateOutlineContent (callback) {
-    let editor = OverleafUtils.getActiveEditor();
+    let editor = OverleafUtils.getActiveEditor()
     if (editor === 'Visual Editor') {
-      OverleafUtils.toggleEditor();
+      OverleafUtils.toggleEditor()
     }
 
     // read the document content
-    const documents = await OverleafUtils.getAllEditorContent();
+    const documents = await OverleafUtils.getAllEditorContent()
 
     // get all \promptex commands with their arguments
-    const promptexCommands = documents.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/g);
+    const promptexCommands = documents.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/g)
 
     // retrieve the database and current criteria list
-    let db = window.promptex._overleafManager.criteriaDatabase;
-    let currentCriteriaList = window.promptex._overleafManager._currentCriteriaList;
+    let db = window.promptex.storageManager.client.criteriaDatabase
+    let currentCriteriaList = window.promptex._overleafManager._currentCriteriaList
 
     // Clear all annotations in the database for the specific category in currentCriteriaList before adding new ones
     if (db[currentCriteriaList]) {
       for (let attributeType in db[currentCriteriaList]) {
         for (let criterion in db[currentCriteriaList][attributeType]) {
-          db[currentCriteriaList][attributeType][criterion].Annotations = []; // Reset the Annotations array
+          db[currentCriteriaList][attributeType][criterion].Annotations = [] // Reset the Annotations array
         }
       }
     }
@@ -358,14 +358,14 @@ class OverleafUtils {
     // For each \promptex command, extract the criterion label and the excerpt (second argument)
     const criterionAnnotations = promptexCommands.map(command => {
       // Updated regex pattern to capture the label, number, and excerpt
-      const match = command.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/);
+      const match = command.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/)
 
       return {
-        label: match ? match[1] : null,  // Capture the criterion label (part before "::")
+        label: match ? match[1] : null, // Capture the criterion label (part before "::")
         number: match ? match[2] : null, // Capture the number (part after "::")
-        excerpt: match ? match[3] : null  // Capture the excerpt (second argument)
-      };
-    }).filter(item => item.label !== null && item.excerpt !== null);
+        excerpt: match ? match[3] : null // Capture the excerpt (second argument)
+      }
+    }).filter(item => item.label !== null && item.excerpt !== null)
 
     // Add the annotations to the database only for the currentCriteriaList category
     criterionAnnotations.forEach(({ label, excerpt }) => {
@@ -373,38 +373,44 @@ class OverleafUtils {
         for (let attributeType in db[currentCriteriaList]) {
           if (db[currentCriteriaList][attributeType][label]) {
             // Push the excerpt into the Annotations array
-            db[currentCriteriaList][attributeType][label].Annotations.push(excerpt);
+            db[currentCriteriaList][attributeType][label].Annotations.push(excerpt)
           }
         }
       }
-    });
+    })
 
-    const outlineContent = {};
-
-    // Iterate through each attribute type (e.g., 'Essential Attributes', 'Desirable Attributes')
-    if (db[currentCriteriaList]) {
-      for (let attributeType in db[currentCriteriaList]) {
-        // Iterate through each criterion in the attribute type
-        for (let criterion in db[currentCriteriaList][attributeType]) {
-          const criterionData = db[currentCriteriaList][attributeType][criterion];
-          const annotationCount = criterionData.Annotations.length;
-          // If the criterion has annotations, we add it to the corresponding category in outlineContent
-          if (annotationCount > 0) {
-            // If the category doesn't exist in outlineContent yet, initialize it as an array
-            if (!outlineContent[attributeType]) {
-              outlineContent[attributeType] = [];
+    const outlineContent = {}
+    window.promptex.storageManager.client.updateSchemas(window.promptex._overleafManager._project, db)
+      .then(() => {
+        console.log('Annotations updated successfully')
+        // Iterate through each attribute type (e.g., 'Essential Attributes', 'Desirable Attributes')
+        if (db[currentCriteriaList]) {
+          for (let attributeType in db[currentCriteriaList]) {
+            // Iterate through each criterion in the attribute type
+            for (let criterion in db[currentCriteriaList][attributeType]) {
+              const criterionData = db[currentCriteriaList][attributeType][criterion]
+              const annotationCount = criterionData.Annotations.length
+              // If the criterion has annotations, we add it to the corresponding category in outlineContent
+              if (annotationCount > 0) {
+                // If the category doesn't exist in outlineContent yet, initialize it as an array
+                if (!outlineContent[attributeType]) {
+                  outlineContent[attributeType] = []
+                }
+                // Add the criterion with its annotation count to the category in outlineContent
+                outlineContent[attributeType].push(`${criterion} (${annotationCount})`)
+              }
             }
-            // Add the criterion with its annotation count to the category in outlineContent
-            outlineContent[attributeType].push(`${criterion} (${annotationCount})`)
           }
         }
-      }
-    }
 
-    // Return the resulting outlineContent
-    if (_.isFunction(callback)) {
-      callback(outlineContent)
-    }
+        // Return the resulting outlineContent
+        if (_.isFunction(callback)) {
+          callback(outlineContent)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to update annotations:', err)
+      })
   }
 }
 

@@ -3,6 +3,7 @@ const OverleafUtils = require('./OverleafUtils')
 const Alerts = require('../utils/Alerts')
 const LocalStorageManager = require('../storage/LocalStorageManager')
 const _ = require('lodash')
+const Utils = require('../utils/Utils')
 
 class OverleafManager {
   constructor () {
@@ -30,13 +31,13 @@ class OverleafManager {
     let that = this
     let project = that.getProject()
     if (project) {
-      that._project = project
+      this._project = project
       this.loadStorage(project, () => {
         console.log(window.promptex.storageManager.client.getSchemas())
         that.addButton()
         that.addOutlineButton()
         that.monitorEditorContent()
-        this._currentCriteriaList =  window.promptex.storageManager.client.getSchemas()[0]
+        this._currentCriteriaList = Object.keys(window.promptex.storageManager.client.getSchemas())[0]
       })
     }
   }
@@ -102,47 +103,33 @@ class OverleafManager {
           })
           // Add tooltip to the element
           // if right-clicked, show a context menu
-          let criterionElement = this.findCriterion(criterion)
-          element.title = 'This highlight is associated with ' + criterion + '\n'
-          if (criterionElement && criterionElement.ImprovementSuggestion) {
-            element.title += 'This is a suggestion for improvement: ' + criterionElement.ImprovementSuggestion
+          let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
+          element.title = 'This highlight is associated with ' + criterion + '<br><br><br>'
+          if (criterionElement && criterionElement.Suggestion) {
+            element.title += 'This is a suggestion for improvement: ' + criterionElement.Suggestion + '<br><br><br>'
             if (criterionElement.EffortValue && criterionElement.EffortDescription) {
-              element.title += '\nEffort Level: ' + criterionElement.EffortValue
+              element.title += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
               element.title += '\nEffort Description: ' + criterionElement.EffortDescription
             }
           }
           element.addEventListener('contextmenu', function (event) {
             event.preventDefault() // Prevent the default right-click menu
-            let info = 'This highlight is associated with ' + criterion + '\n'
-            if (criterionElement && criterionElement.ImprovementSuggestion) {
-              info += 'This is a suggestion for improvement: ' + criterionElement.ImprovementSuggestion
+            let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
+            let info = 'This highlight is associated with ' + criterion + '<br><br><br>'
+            if (criterionElement && criterionElement.Suggestion) {
+              info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
               if (criterionElement.EffortValue && criterionElement.EffortDescription) {
-                info += '\nEffort Level: ' + criterionElement.EffortValue
-                info += '\nEffort Description: ' + criterionElement.EffortDescription
+                info += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
+                info += criterionElement.EffortDescription
               }
             }
             // Show alert with the tooltip message
             Alerts.infoAlert({title: 'Criterion Information', text: info})
             return false // Additional return to ensure default action is canceled
           })
-          // element.title = criterion ? criterion.Description : 'No criterion found';
         }
       })
     }, 500) // Every second
-  }
-
-  findCriterion (criterionName) {
-    // Iterate through the criteria database
-    for (const list in window.promptex.storageManager.client.getSchemas()) {
-      for (const category in window.promptex.storageManager.client.getSchemas()[list]) {
-        for (const criterion in window.promptex.storageManager.client.getSchemas()[list][category]) {
-          if (criterion.toLowerCase() === criterionName.toLowerCase()) {
-            return window.promptex.storageManager.client.getSchemas()[list][category][criterion]
-          }
-        }
-      }
-    }
-    return null
   }
 
   addButton () {
@@ -171,7 +158,7 @@ class OverleafManager {
     })
   }
 
-  addOutlineButton() {
+  addOutlineButton () {
     // Create the container for the new outline
     const outlineContainer = document.querySelector('.outline-container')
 
@@ -196,7 +183,7 @@ class OverleafManager {
 
     const headerTitle = document.createElement('h4')
     headerTitle.classList.add('outline-header-name2')
-    headerTitle.textContent = 'Rhetorical outline' // Update title to "Foundation outline"
+    headerTitle.textContent = 'Content outline' // Update title to "Foundation outline"
 
     // Append the caret and title to the header button, and the button to the header
     headerButton.appendChild(caretIcon)
@@ -226,19 +213,19 @@ class OverleafManager {
     // Handle header click to show/hide the outline body of THIS outline only
     newHeader.addEventListener('click', (event) => {
       event.stopPropagation() // Prevent interference with other outlines
-      const isHidden = newHeader.classList.contains('closed');
+      const isHidden = newHeader.classList.contains('closed')
       // Toggle between opened and closed state
       if (isHidden) {
-        newHeader.classList.replace('closed', 'opened');
+        newHeader.classList.replace('closed', 'opened')
         // Ensure outline body is visible
-        const outlineBody = document.createElement('div');
-        outlineBody.classList.add('outline-body');
+        const outlineBody = document.createElement('div')
+        outlineBody.classList.add('outline-body')
 
         // Create the root list for the items
-        const rootList = document.createElement('ul');
-        rootList.classList.add('outline-item-list', 'outline-item-list-root');
-        rootList.setAttribute('role', 'tree');
-        outlineBody.appendChild(rootList);
+        const rootList = document.createElement('ul')
+        rootList.classList.add('outline-item-list', 'outline-item-list-root')
+        rootList.setAttribute('role', 'tree')
+        outlineBody.appendChild(rootList)
 
         // Helper function to create list items
         const createListItem = (label) => {
@@ -251,24 +238,23 @@ class OverleafManager {
 
           const button = document.createElement('button')
           button.classList.add('outline-item-link')
-          button.setAttribute('data-navigation', '1');
+          button.setAttribute('data-navigation', '1')
           button.textContent = label
           button.addEventListener('click', async () => {
             // Get criterion content
-            let criterion = label.replaceAll(' ', '')
-            var match = label.match(/^(.+)\s\((\d+)\)$/);
+            var match = label.match(/^(.+)\s\((\d+)\)$/)
 
             if (match) {
               // match[1] is the name (e.g., 'Artifact Detail')
               // match[2] is the number (e.g., '1')
-              var name = match[1];
-              var number = match[2];
+              var name = match[1]
+              var number = match[2]
 
               // Get the navigation attribute from the button
-              var navigation = button.getAttribute('data-navigation');
+              var navigation = button.getAttribute('data-navigation')
 
               // Log the extracted name, number, and navigation attribute
-              console.log('Name:', name, '| Number:', number, '| Navigation:', navigation);
+              console.log('Name:', name, '| Number:', number, '| Navigation:', navigation)
               await OverleafUtils.scrollToContent(name, parseInt(navigation))
               if (navigation === number) {
                 button.setAttribute('data-navigation', '1')
@@ -277,8 +263,6 @@ class OverleafManager {
                 button.setAttribute('data-navigation', newNavigation)
               }
             }
-            // Scroll to the corresponding content
-            // OverleafUtils.scrollToContent(label)
           })
 
           div.appendChild(button)
@@ -338,52 +322,51 @@ class OverleafManager {
               categoryButton.setAttribute('aria-expanded', isExpanded ? 'false' : 'true') // Update aria-expanded
             })
           })
-          let treeDiv = document.getElementById('panel-file-tree');
+          let treeDiv = document.getElementById('panel-file-tree')
           // Change the data-panel-size attribute
-          treeDiv.setAttribute('data-panel-size', '80.5'); // You can set it to any value
+          treeDiv.setAttribute('data-panel-size', '80.5') // You can set it to any value
           // Change the flex style property
-          treeDiv.style.flex = '80.5 1 0px'; // Update the first number to match the new panel size
+          treeDiv.style.flex = '80.5 1 0px' // Update the first number to match the new panel size
           let separator = treeDiv.nextElementSibling
           // Change the 'data-panel-resize-handle-enabled' attribute to 'true'
-          separator.setAttribute('data-panel-resize-handle-enabled', 'true');
+          separator.setAttribute('data-panel-resize-handle-enabled', 'true')
           // Change the 'aria-valuenow' attribute to '55'
-          separator.setAttribute('aria-valuenow', '80');
+          separator.setAttribute('aria-valuenow', '80')
           // Select the inner div with the class 'vertical-resize-handle'
-          const innerHandle = separator.querySelector('.vertical-resize-handle');
+          const innerHandle = separator.querySelector('.vertical-resize-handle')
           // Mouse down starts the resizing
-          let isResizing = false;
+          let isResizing = false
           innerHandle.addEventListener('mousedown', (e) => {
-            isResizing = true;
-            document.body.style.cursor = 'row-resize'; // Change the cursor when resizing
-          });
+            isResizing = true
+            document.body.style.cursor = 'row-resize' // Change the cursor when resizing
+          })
           document.addEventListener('mousemove', (e) => {
             if (isResizing) {
-              const panelOutline = document.getElementById('panel-outline');
-              const newSize = e.clientY; // Use the Y position of the mouse to calculate the new size
-              panelOutline.style.flex = `${newSize} 1 0px`; // Adjust flex-grow property dynamically
-              panelOutline.setAttribute('data-panel-size', newSize); // Update the data attribute
+              const panelOutline = document.getElementById('panel-outline')
+              const newSize = e.clientY // Use the Y position of the mouse to calculate the new size
+              panelOutline.style.flex = `${newSize} 1 0px` // Adjust flex-grow// property dynamically
+              panelOutline.setAttribute('data-panel-size', newSize) // Update the data attribute
             }
-          });
+          })
           document.addEventListener('mouseup', () => {
-            isResizing = false;
-            document.body.style.cursor = 'default'; // Reset the cursor
-          });
+            isResizing = false
+            document.body.style.cursor = 'default' // Reset the cursor
+          })
           // Add the 'vertical-resize-handle-enabled' class to the inner div
-          innerHandle.classList.add('vertical-resize-handle-enabled');
-          let panelOutline = separator.nextElementSibling;
+          innerHandle.classList.add('vertical-resize-handle-enabled')
+          let panelOutline = separator.nextElementSibling
           // Change the 'data-panel-size' attribute to '44.8'
-          panelOutline.setAttribute('data-panel-size', '44.8');
+          panelOutline.setAttribute('data-panel-size', '44.8')
           // Change the 'flex' value in the style property
-          panelOutline.style.flex = '44.8 1 0px';
+          panelOutline.style.flex = '44.8 1 0px'
           // Add the outline body to the pane, and let it push content down
           newOutlinePane.appendChild(outlineBody)
-
         })
       } else {
-        newHeader.classList.replace('opened', 'closed');
-        const outlineBody = newOutlinePane.querySelector('.outline-body');
+        newHeader.classList.replace('opened', 'closed')
+        const outlineBody = newOutlinePane.querySelector('.outline-body')
         if (outlineBody) {
-          newOutlinePane.removeChild(outlineBody); // Remove from DOM
+          newOutlinePane.removeChild(outlineBody) // Remove from DOM
         }
       }
       caretIcon.textContent = isHidden ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
@@ -436,6 +419,8 @@ class OverleafManager {
         // Load the default list (first list) when the sidebar first opens
         let defaultList = Object.keys(window.promptex.storageManager.client.getSchemas())[0]
         this.loadCriteriaList(defaultList, window.promptex.storageManager.client.getSchemas())
+      } else {
+        this.loadCriteriaList(this._currentCriteriaList, window.promptex.storageManager.client.getSchemas())
       }
 
       // Add event listener for 'Import' button
@@ -481,7 +466,7 @@ class OverleafManager {
         let categoryDiv = document.createElement('div')
         categoryDiv.classList.add('criteria-category')
         categoryDiv.innerHTML = `
-        <div style='display: flex; align-items: center;'>
+        <div style='display: flex; align-items: center'>
           <h3 style='display: inline-block; margin-right: 10px;'>${category}</h3>
           <button class='addCriterionBtn' style='margin-left: auto;'>+</button>
         </div>
@@ -500,11 +485,19 @@ class OverleafManager {
           button.textContent = criterionLabel // Use the criterion label as button text
           button.style.display = 'inline-block' // Inline-block for proper layout
           button.style.padding = '5px 15px' // Padding to fit text dynamically
-          button.style.backgroundColor = this.getRandomColor() // Random background color for each button
           button.style.border = '1px solid black' // Add borders like in the image
           button.style.borderRadius = '4px' // Slight border radius for smoothness
           button.style.fontWeight = 'bold'
           button.style.cursor = 'pointer' // Change cursor for better UI
+
+          // Conditional styling based on the presence of annotations
+          if (criterion.Annotations && criterion.Annotations.length > 0) {
+            button.style.backgroundColor = Utils.darkenColor(this.getRandomColor(), 0.3) // Darker color if there are annotations
+            button.style.borderWidth = '3px' // Thicker border if there are annotations
+          } else {
+            button.style.backgroundColor = this.getRandomColor() // Normal random color
+            button.style.borderWidth = '1px' // Default border width
+          }
 
           // Append each button to the buttons container
           buttonsContainer.appendChild(button)
@@ -530,8 +523,18 @@ class OverleafManager {
   }
 
   // New method to display criterion details
-  showCriterionDetails (label, criterion) {
-    alert(`Criterion: ${label}\nDescription: ${criterion.Description}\nAssessment: ${criterion.Assessment}\nEffort Value: ${criterion['Effort Value']}`)
+  showCriterionDetails (label, criterionElement) {
+    let info = 'This highlight is associated with ' + label + '<br><br><br>'
+    if (criterionElement && criterionElement.Suggestion) {
+      info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
+      if (criterionElement.EffortValue && criterionElement.EffortDescription) {
+        info += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
+        info += criterionElement.EffortDescription
+      }
+    }
+    // window.promptex._overleafManager._sidebar.remove() // Close the sidebar
+    // Show alert with the tooltip message
+    Alerts.infoAlert({title: 'Criterion Information', text: info})
   }
 
   // Function to show the context menu
@@ -615,31 +618,49 @@ class OverleafManager {
   }
   // Function to add a new category to the selected criteria list
   addNewCategory () {
-    let selectedList = document.getElementById('criteriaSelector').value
+    let selectedList = document.getElementById('criteriaSelector').value // The selected list (e.g., Engineering Research, Action Research)
     let newCategoryName = prompt('Enter the name of the new category:')
 
-    if (newCategoryName && !this.criteriaDatabase[selectedList][newCategoryName]) {
-      this.criteriaDatabase[selectedList][newCategoryName] = []
-      this.loadCriteriaList(selectedList, this.criteriaDatabase)
-    } else {
-      alert('Category already exists or invalid name.')
+    if (newCategoryName) {
+      // Call CriteriaDatabaseClient to add the new category
+      window.promptex.storageManager.client.addCategoryToCriteriaList(selectedList, newCategoryName)
+        .then(() => {
+          alert('Category added successfully')
+        })
+        .catch(err => {
+          console.error('Failed to add category:', err)
+          alert('Failed to add category')
+        })
     }
   }
 
   // Function to add a new criterion to a category
   addNewCriterion (listName, category) {
-    let newCriterion = prompt(`Enter a new criterion for the category '${category}':`)
-
-    if (newCriterion && !this.criteriaDatabase[listName][category].includes(newCriterion)) {
-      this.criteriaDatabase[listName][category].push(newCriterion)
-      this.loadCriteriaList(listName, this.criteriaDatabase) // Reload the list to reflect the new criterion
-    } else {
-      alert('Criterion already exists or invalid input.')
+    let newCriterionName = prompt(`Enter a new criterion name for the category '${category}':`)
+    if (!newCriterionName) {
+      alert('Criterion name cannot be empty.')
+      return
     }
+
+    let newCriterionDescription = prompt(`Enter a description for the criterion '${newCriterionName}':`)
+    if (!newCriterionDescription) {
+      alert('Criterion description cannot be empty.')
+      return
+    }
+
+    // Call CriteriaDatabaseClient to add the new criterion with name and description
+    window.promptex.storageManager.client.addCriterionToCategory(listName, category, newCriterionName, newCriterionDescription)
+      .then(() => {
+        alert('Criterion added successfully')
+      })
+      .catch(err => {
+        console.error('Failed to add criterion:', err)
+        alert('Failed to add criterion')
+      })
   }
 
   importNewCriteriaList () {
-    let newListName = document.getElementById('newListName').value.trim()
+    /* let newListName = document.getElementById('newListName').value.trim()
     let newCategories = document.getElementById('newCategories').value.trim()
 
     if (newListName && newCategories) {
@@ -665,7 +686,7 @@ class OverleafManager {
       document.getElementById('newCategories').value = ''
     } else {
       alert('Please enter a list name and at least one category with criteria.')
-    }
+    } */
   }
 
   // Helper function to generate random background color (optional)
