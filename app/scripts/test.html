@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detect Caret Position in Spans</title>
+</head>
+<body>
+
+<div contenteditable="true" class="editable-div" style="border: 1px solid #ccc; padding: 10px; width: 300px; height: 150px;">
+  <span style="color: red;">This is an editable</span> <span style="color: blue;">div with text</span> <span style="color: green;">in different spans.</span>
+</div>
+
+<script>
+  // Function to detect which span or element contains the caret
+  function getCaretContainerElement() {
+    const selection = window.getSelection();
+
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);  // Get the first range (caret position)
+
+      // Find the container where the caret is located (text node or element)
+      let caretContainer = range.startContainer;
+
+      // If the caret is inside a text node, get its parent element
+      if (caretContainer.nodeType === Node.TEXT_NODE) {
+        caretContainer = caretContainer.parentNode;
+      }
+
+      // Now caretContainer is the element that contains the caret (could be a span or any element)
+      console.log("Caret is positioned inside element:", caretContainer.tagName, caretContainer);
+
+      // Optionally, you can output this information or highlight the element
+    } else {
+      console.log("No caret position detected.");
+    }
+  }
+
+  // Event listener to detect caret position when the user clicks or types
+  document.querySelector('.editable-div').addEventListener('keyup', getCaretContainerElement);
+  document.querySelector('.editable-div').addEventListener('click', getCaretContainerElement);
+
+</script>
+
+</body>
+</html>

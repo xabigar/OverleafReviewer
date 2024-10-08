@@ -119,7 +119,7 @@ body[data-loading="true"] #loading-overlay {
 }
 
 .criteria-button {
-  flex: 1 1 calc(50% - 10px); /* Two buttons per row with gap adjustment */
+  flex: 1 1 calc(100% - 10px); /* Two buttons per row with gap adjustment */
   padding: 10px;
   background-color: #e0e0e0;
   border: 1px solid black;

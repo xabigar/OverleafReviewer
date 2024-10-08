@@ -49,87 +49,110 @@ class OverleafManager {
       let elements = document.querySelectorAll('.ol-cm-command-promptex')
 
       elements.forEach((element) => {
-        // Find the first .ol-cm-command-textit inside the element
-        let commandTextit = element.querySelector('.ol-cm-command-textit')
+        if (!this.isSelected(element)) {
+          // Find the first .ol-cm-command-textit inside the element
+          let commandTextit = element.querySelector('.ol-cm-command-textit')
 
-        if (commandTextit) {
-          // Extract the text content from the .ol-cm-command-textit element
-          let commandText = commandTextit.textContent
-          let criterion = ''
-          // Log the content for debugging
-          console.log('PrompTeX Command Found:', commandText)
+          if (commandTextit) {
+            // Extract the text content from the .ol-cm-command-textit element
+            let commandText = commandTextit.textContent
+            let criterion = ''
+            // Check if the content matches the format 'text::number'
+            const match = commandText.match(/(.*)::(\d+)/)
 
-          // Check if the content matches the format 'text::number'
-          const match = commandText.match(/(.*)::(\d+)/)
+            if (match) {
+              criterion = match[1]
+              const number = parseInt(match[2], 10)
 
-          if (match) {
-            criterion = match[1]
-            const number = parseInt(match[2], 10)
-
-            // Apply background color based on the number
-            if (number === 0) {
-              element.style.backgroundColor = 'green' // Set background to green
-            } else if (number === 1) {
-              element.style.backgroundColor = 'yellow' // Set background to yellow
-            } else if (number === 2) {
-              element.style.backgroundColor = 'red' // Set background to red
-            } else {
-              element.style.backgroundColor = '' // Reset background for other cases
-            }
-          }
-
-          // Set the display of the first .ol-cm-command-textit element to 'none'
-          commandTextit.style.display = 'none'
-          // Hide the first two .tok-punctuation.ol-cm-punctuation elements
-          const previousSibling = element.previousElementSibling
-          const secondPreviousSibling = previousSibling?.previousElementSibling
-          const nextSibling = element.nextElementSibling
-          if (previousSibling && secondPreviousSibling) {
-            previousSibling.style.display = 'none' // cm-matchingBracket
-            secondPreviousSibling.style.display = 'none' // \promptex
-            nextSibling.style.display = 'none' // cm-punctuation
-            // firstBracket.style.display = 'none'; // cm-punctuation
-          }
-          if (secondPreviousSibling && secondPreviousSibling.textContent && secondPreviousSibling.textContent === 'ex') {
-            const thirdPreviousSibling = secondPreviousSibling.previousElementSibling
-            const forthPreviousSibling = thirdPreviousSibling.previousElementSibling
-            thirdPreviousSibling.style.display = 'none' // cm-punctuation
-            forthPreviousSibling.style.display = 'none' // cm-punctuation
-          }
-          // Select all elements with both classes 'tok-punctuation' and 'ol-cm-punctuation' inside the current item
-          element.querySelectorAll('.tok-punctuation.ol-cm-punctuation').forEach(punctuationElement => {
-            // Hide the punctuation element by setting display to 'none'
-            punctuationElement.style.display = 'none'
-          })
-          // Add tooltip to the element
-          // if right-clicked, show a context menu
-          let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
-          element.title = 'This highlight is associated with ' + criterion + '<br><br><br>'
-          if (criterionElement && criterionElement.Suggestion) {
-            element.title += 'This is a suggestion for improvement: ' + criterionElement.Suggestion + '<br><br><br>'
-            if (criterionElement.EffortValue && criterionElement.EffortDescription) {
-              element.title += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
-              element.title += '\nEffort Description: ' + criterionElement.EffortDescription
-            }
-          }
-          element.addEventListener('contextmenu', function (event) {
-            event.preventDefault() // Prevent the default right-click menu
-            let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
-            let info = 'This highlight is associated with ' + criterion + '<br><br><br>'
-            if (criterionElement && criterionElement.Suggestion) {
-              info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
-              if (criterionElement.EffortValue && criterionElement.EffortDescription) {
-                info += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
-                info += criterionElement.EffortDescription
+              // Apply background color based on the number
+              if (number === 0) {
+                element.style.backgroundColor = 'green' // Set background to green
+              } else if (number === 1) {
+                element.style.backgroundColor = 'yellow' // Set background to yellow
+              } else if (number === 2) {
+                element.style.backgroundColor = 'red' // Set background to red
+              } else {
+                element.style.backgroundColor = '' // Reset background for other cases
               }
             }
-            // Show alert with the tooltip message
-            Alerts.infoAlert({title: 'Criterion Information', text: info})
-            return false // Additional return to ensure default action is canceled
-          })
+
+            // Set the display of the first .ol-cm-command-textit element to 'none'
+            commandTextit.style.display = 'none'
+            // Hide the first two .tok-punctuation.ol-cm-punctuation elements
+            const previousSibling = element.previousElementSibling
+            const secondPreviousSibling = previousSibling?.previousElementSibling
+            const nextSibling = element.nextElementSibling
+            if (previousSibling && secondPreviousSibling) {
+              previousSibling.style.display = 'none' // cm-matchingBracket
+              secondPreviousSibling.style.display = 'none' // \promptex
+              nextSibling.style.display = 'none' // cm-punctuation
+              // firstBracket.style.display = 'none'; // cm-punctuation
+            }
+            if (secondPreviousSibling && secondPreviousSibling.textContent && secondPreviousSibling.textContent === 'ex') {
+              const thirdPreviousSibling = secondPreviousSibling.previousElementSibling
+              const forthPreviousSibling = thirdPreviousSibling.previousElementSibling
+              thirdPreviousSibling.style.display = 'none' // cm-punctuation
+              forthPreviousSibling.style.display = 'none' // cm-punctuation
+            }
+            // Select all elements with both classes 'tok-punctuation' and 'ol-cm-punctuation' inside the current item
+            element.querySelectorAll('.tok-punctuation.ol-cm-punctuation').forEach(punctuationElement => {
+              // Hide the punctuation element by setting display to 'none'
+              punctuationElement.style.display = 'none'
+            })
+            // Add tooltip to the element
+            // if right-clicked, show a context menu
+            let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
+            element.title = 'This highlight is associated with ' + criterion + '<br><br><br>'
+            if (criterionElement && criterionElement.Suggestion) {
+              element.title += 'This is a suggestion for improvement: ' + criterionElement.Suggestion + '<br><br><br>'
+              if (criterionElement.EffortValue && criterionElement.EffortDescription) {
+                element.title += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
+                element.title += '\nEffort Description: ' + criterionElement.EffortDescription
+              }
+            }
+            element.addEventListener('contextmenu', function (event) {
+              event.preventDefault() // Prevent the default right-click menu
+              let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
+              let info = 'This highlight is associated with ' + criterion + '<br><br><br>'
+              if (criterionElement && criterionElement.Suggestion) {
+                info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
+                if (criterionElement.EffortValue && criterionElement.EffortDescription) {
+                  info += '\nEffort Level: ' + criterionElement.EffortValue + '<br>'
+                  info += criterionElement.EffortDescription
+                }
+              }
+              // Show alert with the tooltip message
+              Alerts.infoAlert({ title: 'Criterion Information', text: info })
+              return false // Additional return to ensure default action is canceled
+            })
+          }
         }
       })
     }, 500) // Every second
+  }
+
+  isSelected (element) {
+    const selection = window.getSelection()
+
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0) // Get the first range (caret position)
+
+      // Find the container where the caret is located (text node or element)
+      let caretContainer = range.startContainer
+
+      // If the caret is inside a text node, get its parent element
+      if (caretContainer.nodeType === Node.TEXT_NODE) {
+        caretContainer = caretContainer.parentNode
+      }
+      // Check if the element contains the caret container (either directly or via descendants)
+      if (element.contains(caretContainer)) {
+        return true
+      } else {
+        return false
+      }
+    } else {
+      return false
+    }
   }
 
   addButton () {
