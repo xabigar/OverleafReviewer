@@ -131,9 +131,7 @@ class Alerts {
       title: 'Loading',
       html: content,
       toast: true,
-      backdrop: 'rgba(0, 0, 0, 0.8)', // Darkens the background more
-      allowOutsideClick: false, // Prevents clicking outside to close the modal
-      position: 'bottom-end',
+      position: 'center',
       showConfirmButton: false,
       showCancelButton: false,
       customClass: 'custom-loading-toast',

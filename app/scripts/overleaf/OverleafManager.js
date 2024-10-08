@@ -3,7 +3,6 @@ const OverleafUtils = require('./OverleafUtils')
 const Alerts = require('../utils/Alerts')
 const LocalStorageManager = require('../storage/LocalStorageManager')
 const _ = require('lodash')
-const Utils = require('../utils/Utils')
 
 class OverleafManager {
   constructor () {
@@ -103,6 +102,9 @@ class OverleafManager {
             // if right-clicked, show a context menu
             let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
             element.title = 'This highlight is associated with ' + criterion + '<br><br><br>'
+            if (criterionElement && criterionElement.Assessment && criterionElement.AssessmentDescription) {
+              element.title += 'Assessment(' + criterionElement.Assessment + '): ' + criterionElement.AssessmentDescription + '<br>'
+            }
             if (criterionElement && criterionElement.Suggestion) {
               element.title += 'This is a suggestion for improvement: ' + criterionElement.Suggestion + '<br><br><br>'
               if (criterionElement.EffortValue && criterionElement.EffortDescription) {
@@ -114,6 +116,9 @@ class OverleafManager {
               event.preventDefault() // Prevent the default right-click menu
               let criterionElement = window.promptex.storageManager.client.findCriterion(criterion)
               let info = 'This highlight is associated with ' + criterion + '<br><br><br>'
+              if (criterionElement && criterionElement.Assessment && criterionElement.AssessmentDescription) {
+                info += 'Assessment(' + criterionElement.Assessment + '): ' + criterionElement.AssessmentDescription + '<br>'
+              }
               if (criterionElement && criterionElement.Suggestion) {
                 info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
                 if (criterionElement.EffortValue && criterionElement.EffortDescription) {
@@ -475,7 +480,6 @@ class OverleafManager {
   loadCriteriaList (listName, database) {
     let contentDiv = document.getElementById('criteriaContent')
     contentDiv.innerHTML = '' // Clear previous content
-
     if (database[listName]) {
       for (const category in database[listName]) {
         // Add a horizontal line between categories
@@ -506,20 +510,29 @@ class OverleafManager {
           let button = document.createElement('button')
           button.classList.add('criteria-button')
           button.textContent = criterionLabel // Use the criterion label as button text
-          button.style.display = 'inline-block' // Inline-block for proper layout
-          button.style.padding = '5px 15px' // Padding to fit text dynamically
-          button.style.border = '1px solid black' // Add borders like in the image
-          button.style.borderRadius = '4px' // Slight border radius for smoothness
-          button.style.fontWeight = 'bold'
-          button.style.cursor = 'pointer' // Change cursor for better UI
 
-          // Conditional styling based on the presence of annotations
-          if (criterion.Annotations && criterion.Annotations.length > 0) {
-            button.style.backgroundColor = Utils.darkenColor(this.getRandomColor(), 0.3) // Darker color if there are annotations
-            button.style.borderWidth = '3px' // Thicker border if there are annotations
-          } else {
-            button.style.backgroundColor = this.getRandomColor() // Normal random color
-            button.style.borderWidth = '1px' // Default border width
+          // Set the default color for the button (light grey)
+          button.style.backgroundColor = '#d3d3d3' // Default light grey
+          button.style.border = '1px solid black' // Border for all buttons
+          button.style.borderRadius = '4px'
+          button.style.fontWeight = 'bold'
+          button.style.cursor = 'pointer'
+
+          // Conditional styling based on the presence of Assessment (green, yellow, red)
+          if (criterion.Assessment) {
+            switch (criterion.Assessment.toLowerCase()) {
+              case 'green':
+                button.style.backgroundColor = '#b2f2bb' // Pastel green
+                break
+              case 'yellow':
+                button.style.backgroundColor = '#ffecb3' // Pastel yellow
+                break
+              case 'red':
+                button.style.backgroundColor = '#ffccd5' // Pastel red
+                break
+              default:
+                button.style.backgroundColor = '#d3d3d3' // Default grey if no match
+            }
           }
 
           // Append each button to the buttons container
@@ -548,6 +561,9 @@ class OverleafManager {
   // New method to display criterion details
   showCriterionDetails (label, criterionElement) {
     let info = 'This highlight is associated with ' + label + '<br><br><br>'
+    if (criterionElement && criterionElement.Assessment && criterionElement.AssessmentDescription) {
+      info += 'Assessment (' + criterionElement.Assessment + '): ' + criterionElement.AssessmentDescription + '<br><br>'
+    }
     if (criterionElement && criterionElement.Suggestion) {
       info += 'Suggestion: ' + criterionElement.Suggestion + '<br><br><br>'
       if (criterionElement.EffortValue && criterionElement.EffortDescription) {
@@ -555,7 +571,6 @@ class OverleafManager {
         info += criterionElement.EffortDescription
       }
     }
-    // window.promptex._overleafManager._sidebar.remove() // Close the sidebar
     // Show alert with the tooltip message
     Alerts.infoAlert({title: 'Criterion Information', text: info})
   }

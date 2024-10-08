@@ -48,9 +48,10 @@ class CriterionActions {
             let sentiment = json.sentiment
             let effortLevel = json.effortLevel
             let effortDescription = json.effortDescription
+            let assessmentDescription = json.assessment
             // Call CriteriaDatabaseClient to update the criterion
             let listName = window.promptex._overleafManager._currentCriteriaList
-            window.promptex.storageManager.client.updateCriterion(listName, criterionLabel, cleanExcerpts, suggestion, sentiment, effortLevel, effortDescription)
+            window.promptex.storageManager.client.updateCriterion(listName, criterionLabel, cleanExcerpts, suggestion, sentiment, effortLevel, effortDescription, assessmentDescription)
               .then(() => {
                 console.log('Criterion updated successfully')
                 let newContent = LatexUtils.addCommentsToLatex(documents, cleanExcerpts, suggestion, sentiment, criterionLabel)
