@@ -599,7 +599,7 @@ class OverleafManager {
     menu.style.boxShadow = '0 0 5px rgba(0, 0, 0, 0.2)'
     menu.innerHTML = `
     <ul style='list-style-type: none; padding: 0; margin: 0;'>
-      <li style='padding: 5px 10px; cursor: pointer;' id='assessCriterion'>Assess</li>
+      <li style='padding: 5px 10px; cursor: pointer;' id='assessCriterion'>Ask PrompTeX</li>
       <li style='padding: 5px 10px; cursor: pointer;' id='editCriterion'>Edit</li>
       <li style='padding: 5px 10px; cursor: pointer;' id='deleteCriterion'>Delete</li>
     </ul>
