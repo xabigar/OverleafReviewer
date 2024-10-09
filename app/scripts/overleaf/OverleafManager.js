@@ -254,14 +254,17 @@ class OverleafManager {
           const llmProvider = llm.modelType
           // Create an array of promises for processing each section
           const processingPromises = diffResult.map((section) => {
+            Alerts.showLoadingWindowDuringProcess('Processing section...' + section.title)
             return new Promise((resolve) => {
               let foundSection = []
               let combinedContent = ''
               let deletedLinesString = ''
               let newLinesString = ''
               let prompt = ''
+              let typeOfChange = ''
 
               if (section.newSection) {
+                typeOfChange = 'New Section'
                 let newLines = section.content
                 if (newLines.length > 0) {
                   newLinesString = newLines.join('\n')
@@ -270,20 +273,24 @@ class OverleafManager {
                   'DO: Act as a writer of a research paper. For the above research paper, the following section is new:\n' +
                   section.title + '\n content is' + newLinesString + '\n' +
                   'Please review the rest of the sections and provide a comment about how the writer should propagate and accommodate the new content in the rest of the research paper to not destabilize the overall manuscript, maintaining coherence and harmony.' +
-                  'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+                  'identify the changes made during the improvement process, recognizing where these adjustments impact terminology, criteria, structural decisions, or comparative analysis. Revise the relevant sections of the document to ensure that the updated elements replace outdated information or align with new standards. Adjust related content, such as analysis, visuals, or discussions, to integrate the implications of these changes and maintain consistency throughout. Finally, reflect the updated focus or criteria in summary and conclusion sections, ensuring that the overall narrative of the document accurately represents the improvements made. This systematic approach ensures that changes are thoroughly embedded, maintaining coherence and clarity across the entire work.' +
+                  'Provide the answer in a JSON format with the following structure: {comment: "Your comment here", changes: "Changes that should be propagated to other sections", spot:"what places in the manuscript can be affected"} Please, just provide the JSON, do not write anything else in the answer.'
               } else if (section.deletedSection) {
-                let deletedLines = section.content;
+                typeOfChange = 'Deleted Section'
+                let deletedLines = section.content
                 if (deletedLines.length > 0) {
                   deletedLinesString = deletedLines.join('\n')
                   prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' +
                     'DO: Act as a writer of a research paper. For the above research paper, the following section has been deleted:\n' +
                     section.title + '\n content was' + deletedLinesString + '\n' +
                     'Please review the rest of the sections and provide a comment about how deleting the section has affected or not the rest of the research paper to not destabilize the overall manuscript, maintaining coherence and harmony.' +
-                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+                    ' identify the changes made during the improvement process, recognizing where these adjustments impact terminology, criteria, structural decisions, or comparative analysis. Revise the relevant sections of the document to ensure that the updated elements replace outdated information or align with new standards. Adjust related content, such as analysis, visuals, or discussions, to integrate the implications of these changes and maintain consistency throughout. Finally, reflect the updated focus or criteria in summary and conclusion sections, ensuring that the overall narrative of the document accurately represents the improvements made. This systematic approach ensures that changes are thoroughly embedded, maintaining coherence and clarity across the entire work.' +
+                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here", changes: "Changes that should be propagated to other sections", spot:"what places in the manuscript can be affected"} Please, just provide the JSON, do not write anything else in the answer.'
                 }
               } else if (!(section.deletedSection || section.newSection)) {
+                typeOfChange = 'Modified Section'
                 if (section.deletedLines.length > 0 || section.newLines.length > 0) {
-                  let newLines = section.newLines;
+                  let newLines = section.newLines
                   if (newLines.length > 0) {
                     newLinesString = newLines.join('\n')
                   }
@@ -292,14 +299,15 @@ class OverleafManager {
                     deletedLinesString = deletedLines.join('\n')
                   }
 
-                  foundSection = changedArray.find(s => s.title === section.title);
+                  foundSection = changedArray.find(s => s.title === section.title)
                   combinedContent = foundSection ? foundSection.content.join('\n') : ''
                   prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' +
                     'DO: Act as a writer of a research paper. For the above research paper, the following section has been modified:\n' +
                     section.title + '\n the content is this' + combinedContent + '\n' +
                     'added lines were' + newLinesString + '\n' + 'deleted lines were' + deletedLinesString + '\n' +
                     'Please review the rest of the sections and provide a comment about how the modifications have affected or not the rest of the research paper to maintain coherence and harmony.' +
-                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+                    'identify the changes made during the improvement process, recognizing where these adjustments impact terminology, criteria, structural decisions, or comparative analysis. Revise the relevant sections of the document to ensure that the updated elements replace outdated information or align with new standards. Adjust related content, such as analysis, visuals, or discussions, to integrate the implications of these changes and maintain consistency throughout. Finally, reflect the updated focus or criteria in summary and conclusion sections, ensuring that the overall narrative of the document accurately represents the improvements made. This systematic approach ensures that changes are thoroughly embedded, maintaining coherence and clarity across the entire work.' +
+                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here", changes: "Changes that should be propagated to other sections", spot:"what places in the manuscript can be affected"} Please, just provide the JSON, do not write anything else in the answer.'
                 }
               }
 
@@ -309,9 +317,17 @@ class OverleafManager {
                     let callback = (json) => {
                       Alerts.closeLoadingWindow()
                       const comment = json.comment
+                      summary += 'Section (' + typeOfChange + ') ' + section.title + '\n'
                       if (comment) {
-                        summary += 'Section: ' + section.title + '\n'
-                        summary += 'Comment: ' + comment + '\n\n'
+                        summary += '\tComment: ' + comment + '\n\n'
+                      }
+                      const changes = json.changes
+                      if (changes) {
+                        summary += '\tChanges: ' + changes + '\n\n'
+                      }
+                      const spot = json.spot
+                      if (spot) {
+                        summary += '\tSpot: ' + spot + '\n\n'
                       }
                       resolve() // Resolve the promise when the API call is done
                     }
@@ -356,10 +372,50 @@ class OverleafManager {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Stabilization Summary</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          margin: 0;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+        h1 {
+          text-align: center;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        .content-container {
+          max-width: 1500px;
+          margin: 0 auto;
+          background: #f9f9f9;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          overflow-wrap: break-word;
+        }
+        pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          background-color: #ffffff;
+          padding: 15px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          overflow: auto;
+          max-height: 400px;
+        }
+        @media (max-width: 600px) {
+          .content-container {
+            padding: 15px;
+          }
+        }
+      </style>
     </head>
     <body>
       <h1>Stabilization Summary</h1>
-      <pre>${summary}</pre>
+      <div class="content-container">
+        <pre>${summary}</pre>
+      </div>
     </body>
     </html>
   `
