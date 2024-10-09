@@ -14,6 +14,8 @@ class CriterionActions {
     window.promptex._overleafManager._sidebar.remove()
     Alerts.showLoadingWindowDuringProcess('Reading document content...')
     const documents = await OverleafUtils.getAllEditorContent()
+    const sectionsArray = OverleafUtils.extractSections(documents)
+    console.log(sectionsArray)
     let prompt = Config.prompts.annotatePrompt
     prompt = prompt.replace('[C_NAME]', criterionLabel)
     prompt = prompt.replace('[C_DESCRIPTION]', description)
@@ -59,6 +61,17 @@ class CriterionActions {
                 OverleafUtils.removeContent(() => {
                   window.promptex._overleafManager._sidebar.remove()
                   OverleafUtils.insertContent(newContent)
+                  if (window.promptex._overleafManager._standardized) {
+                    const projectId = window.promptex._overleafManager._project
+                    window.promptex.storageManager.client.setStandarizedVersion(projectId, sectionsArray, (err, array) => {
+                      if (err) {
+                        console.error('Failed to set standarized version:', err)
+                      } else {
+                        console.log('Standarized version set successfully: ' + array)
+                        window.promptex._overleafManager.checkAndUpdateStandardized(false)
+                      }
+                    })
+                  }
                 }).catch(err => {
                   console.error('Failed to update criterion:', err)
                   console.log('Failed to update criterion')

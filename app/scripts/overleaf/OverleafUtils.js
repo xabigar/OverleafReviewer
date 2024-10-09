@@ -238,6 +238,43 @@ class OverleafUtils {
     OverleafUtils.toggleEditor()
   }
 
+  // Define a function to split sections based on \section command
+  // Define a function to split sections based on \section command
+  static extractSections (latexContent) {
+    const lines = latexContent.split('\n')
+    const sections = []
+    let currentSection = null
+
+    lines.forEach(line => {
+      // Regex to capture \section{...} even if there is extra text after it, e.g., \label
+      const sectionMatch = line.match(/\\section\{(.+?)\}/)
+      if (sectionMatch) {
+        // If there's a current section being tracked, push it into the array
+        if (currentSection) {
+          // Remove empty lines from the content
+          currentSection.content = currentSection.content.filter(line => line.trim() !== '')
+          sections.push(currentSection)
+        }
+        // Create a new section object
+        currentSection = {
+          title: sectionMatch[1], // Capture the section title
+          content: [line]
+        }
+      } else if (currentSection) {
+        // If a section is being tracked, keep adding non-empty lines to its content
+        currentSection.content.push(line)
+      }
+    })
+
+    // Push the last section if any, after filtering out empty lines
+    if (currentSection) {
+      currentSection.content = currentSection.content.filter(line => line.trim() !== '')
+      sections.push(currentSection)
+    }
+
+    return sections
+  }
+
   static async removeContent (callback) {
     const editorContent = document.querySelector('#panel-source-editor > div > div > div.cm-scroller > div.cm-content.cm-lineWrapping')
     if (!editorContent) {
@@ -343,7 +380,7 @@ class OverleafUtils {
     const promptexCommands = documents.match(/\\promptex{\\textit{([^}]*)::(\d+)}}{([^}]*)}/g)
 
     // retrieve the database and current criteria list
-    let db = window.promptex.storageManager.client.criteriaDatabase
+    let db = window.promptex.storageManager.client.projectDatabase.criterionSchemas
     let currentCriteriaList = window.promptex._overleafManager._currentCriteriaList
 
     // Clear all annotations in the database for the specific category in currentCriteriaList before adding new ones

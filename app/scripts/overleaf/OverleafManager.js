@@ -3,12 +3,16 @@ const OverleafUtils = require('./OverleafUtils')
 const Alerts = require('../utils/Alerts')
 const LocalStorageManager = require('../storage/LocalStorageManager')
 const _ = require('lodash')
+const LatexUtils = require('./LatexUtils')
+const LLMClient = require('../llm/LLMClient')
+const Config = require('../Config')
 
 class OverleafManager {
   constructor () {
     this._project = null
     this._sidebar = null
     this._currentCriteriaList = null
+    this._standarized = true
   }
 
   init () {
@@ -34,9 +38,12 @@ class OverleafManager {
       this.loadStorage(project, () => {
         console.log(window.promptex.storageManager.client.getSchemas())
         that.addButton()
+        that.addStabilizeButton()
         that.addOutlineButton()
         that.monitorEditorContent()
         this._currentCriteriaList = Object.keys(window.promptex.storageManager.client.getSchemas())[0]
+        this._standardized = window.promptex.storageManager.client.getStandardizedStatus()
+        console.log('Standardized:', this._standardized)
       })
     }
   }
@@ -184,6 +191,194 @@ class OverleafManager {
       // const content = await OverleafUtils.getAllEditorContent()
       this.showCriteriaSidebar()
     })
+  }
+
+  addStabilizeButton () {
+    // Create the 'Stabilize' button element
+    let stabilizeButton = document.createElement('div')
+    stabilizeButton.classList.add('toolbar-item')
+    stabilizeButton.innerHTML = `
+    <button type='button' class='btn btn-full-height' id='stabilizeBtn'>
+      <i class='fa fa-balance-scale fa-fw' aria-hidden='true'></i>
+      <p class='toolbar-label'>Stabilize</p>
+    </button>
+  `
+    // Locate the toolbar where the button should be added
+    let toolbar = document.querySelector('.toolbar-right')
+
+    // Insert the 'Stabilize' button at the end of the toolbar list
+    if (toolbar) {
+      toolbar.appendChild(stabilizeButton)
+    } else {
+      console.error('Toolbar not found')
+    }
+
+    stabilizeButton.addEventListener('click', async () => {
+      // Action for the 'Stabilize' button click
+      await this.stabilizeContent()
+    })
+  }
+
+  async stabilizeContent () {
+    let standarized = window.promptex.storageManager.client.getStandardizedStatus()
+    if (standarized) {
+      // If already standardized, show a message
+      Alerts.infoAlert({ title: 'Content Already Stabilized', text: 'The content"s structure is already stabilized.' })
+    } else {
+      if (this._sidebar) {
+        this._sidebar.remove()
+      }
+      let editor = OverleafUtils.getActiveEditor()
+      if (editor === 'Visual Editor') {
+        OverleafUtils.toggleEditor()
+      }
+      let documents = await OverleafUtils.getAllEditorContent()
+      documents = LatexUtils.removeCommentsFromLatex(documents)
+      const changedArray = OverleafUtils.extractSections(documents)
+      let summary = 'The content has been stabilized:\n'
+      window.promptex.storageManager.client.cleanCriterionValues(this._project).then(() => {
+        console.log('changed array:')
+        console.log(changedArray)
+        console.log('standarized array:')
+        const standardizedArray = window.promptex.storageManager.client.getStandardizedVersion() // The previous version.
+        console.log(standardizedArray)
+        const diffResult = LatexUtils.generateDiff(changedArray, standardizedArray)
+        console.log('Diff result:')
+        console.log(diffResult)
+        window.promptex._overleafManager.checkAndUpdateStandardized(true)
+        Alerts.showLoadingWindowDuringProcess('Retrieving API key...')
+        chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getSelectedLLM' }, async ({ llm }) => {
+          if (llm === '') {
+            llm = Config.review.defaultLLM
+          }
+          const llmProvider = llm.modelType
+          // Create an array of promises for processing each section
+          const processingPromises = diffResult.map((section) => {
+            return new Promise((resolve) => {
+              let foundSection = []
+              let combinedContent = ''
+              let deletedLinesString = ''
+              let newLinesString = ''
+              let prompt = ''
+
+              if (section.newSection) {
+                let newLines = section.content
+                if (newLines.length > 0) {
+                  newLinesString = newLines.join('\n')
+                }
+                prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' +
+                  'DO: Act as a writer of a research paper. For the above research paper, the following section is new:\n' +
+                  section.title + '\n content is' + newLinesString + '\n' +
+                  'Please review the rest of the sections and provide a comment about how the writer should propagate and accommodate the new content in the rest of the research paper to not destabilize the overall manuscript, maintaining coherence and harmony.' +
+                  'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+              } else if (section.deletedSection) {
+                let deletedLines = section.content;
+                if (deletedLines.length > 0) {
+                  deletedLinesString = deletedLines.join('\n')
+                  prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' +
+                    'DO: Act as a writer of a research paper. For the above research paper, the following section has been deleted:\n' +
+                    section.title + '\n content was' + deletedLinesString + '\n' +
+                    'Please review the rest of the sections and provide a comment about how deleting the section has affected or not the rest of the research paper to not destabilize the overall manuscript, maintaining coherence and harmony.' +
+                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+                }
+              } else if (!(section.deletedSection || section.newSection)) {
+                if (section.deletedLines.length > 0 || section.newLines.length > 0) {
+                  let newLines = section.newLines;
+                  if (newLines.length > 0) {
+                    newLinesString = newLines.join('\n')
+                  }
+                  let deletedLines = section.deletedLines
+                  if (deletedLines.length > 0) {
+                    deletedLinesString = deletedLines.join('\n')
+                  }
+
+                  foundSection = changedArray.find(s => s.title === section.title);
+                  combinedContent = foundSection ? foundSection.content.join('\n') : ''
+                  prompt = 'RESEARCH PAPER: ' + LatexUtils.processTexDocument(documents) + '\n' +
+                    'DO: Act as a writer of a research paper. For the above research paper, the following section has been modified:\n' +
+                    section.title + '\n the content is this' + combinedContent + '\n' +
+                    'added lines were' + newLinesString + '\n' + 'deleted lines were' + deletedLinesString + '\n' +
+                    'Please review the rest of the sections and provide a comment about how the modifications have affected or not the rest of the research paper to maintain coherence and harmony.' +
+                    'Provide the answer in a JSON format with the following structure: {comment: "Your comment here"} Please, just provide the JSON, do not write anything else in the answer.'
+                }
+              }
+
+              if (prompt !== '') {
+                chrome.runtime.sendMessage({ scope: 'llm', cmd: 'getAPIKEY', data: llmProvider }, ({ apiKey }) => {
+                  if (apiKey !== null && apiKey !== '') {
+                    let callback = (json) => {
+                      Alerts.closeLoadingWindow()
+                      const comment = json.comment
+                      if (comment) {
+                        summary += 'Section: ' + section.title + '\n'
+                        summary += 'Comment: ' + comment + '\n\n'
+                      }
+                      resolve() // Resolve the promise when the API call is done
+                    }
+                    LLMClient.simpleQuestion({
+                      apiKey: apiKey,
+                      prompt: prompt,
+                      llm: llm,
+                      callback: callback
+                    })
+                  } else {
+                    Alerts.showErrorToast('No API key found for ' + llm)
+                    resolve() // Resolve even if no API key is found
+                  }
+                })
+              } else {
+                resolve() // Resolve if no prompt is generated
+              }
+            })
+          })
+
+          // Wait for all processing to complete before downloading the summary
+          await Promise.all(processingPromises)
+          Alerts.closeLoadingWindow()
+          this.downloadSummaryAsHTML(summary)
+        })
+        /* OverleafUtils.removeContent(() => {
+          if (window.promptex._overleafManager._sidebar) {
+            window.promptex._overleafManager._sidebar.remove()
+          }
+          OverleafUtils.insertContent(documents)
+        }) */
+      })
+    }
+  }
+
+  // Function to download the summary as an HTML file
+  downloadSummaryAsHTML (summary) {
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Stabilization Summary</title>
+    </head>
+    <body>
+      <h1>Stabilization Summary</h1>
+      <pre>${summary}</pre>
+    </body>
+    </html>
+  `
+
+    // Create a Blob from the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' })
+
+    // Create a download link
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'stabilization_summary.html'
+
+    // Append the link to the document, click it, and then remove it
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Revoke the object URL to free memory
+    URL.revokeObjectURL(link.href)
   }
 
   addOutlineButton () {
@@ -434,7 +629,9 @@ class OverleafManager {
         <button id='submitNewCriteria'>Save</button>
       </div>
       <hr>
+      <button id='resetDatabaseBtn' style="background-color: #ff6666; color: white; border: none; padding: 10px; cursor: pointer; width: 100%;">Reset Database</button>
     `
+
       document.body.appendChild(sidebar)
       this._sidebar = sidebar
       // Add event listener to the dropdown to dynamically load new criteria
@@ -473,6 +670,24 @@ class OverleafManager {
       let submitNewCriteriaBtn = document.getElementById('submitNewCriteria')
       submitNewCriteriaBtn.addEventListener('click', () => {
         this.importNewCriteriaList()
+      })
+
+      // Add event listener for 'Reset Database' button
+      let resetDatabaseBtn = document.getElementById('resetDatabaseBtn')
+      resetDatabaseBtn.addEventListener('click', () => {
+        const projectId = window.promptex._overleafManager._project // Replace with your method to retrieve the current project ID
+        // Call the cleanDatabase function
+        window.promptex.storageManager.cleanDatabase(projectId, (error) => {
+          if (error) {
+            console.error('Failed to reset the database:', error)
+            alert('Failed to reset the database. Please try again.')
+          } else {
+            console.log('Database reset successfully.')
+            alert('Database has been reset to default.')
+            // Optionally reload the criteria list to reflect the reset state
+            this.loadCriteriaList(Object.keys(window.promptex.storageManager.client.getSchemas())[0], window.promptex.storageManager.client.getSchemas())
+          }
+        })
       })
     }
   }
@@ -572,7 +787,7 @@ class OverleafManager {
       }
     }
     // Show alert with the tooltip message
-    Alerts.infoAlert({title: 'Criterion Information', text: info})
+    Alerts.infoAlert({ title: 'Criterion Information', text: info })
   }
 
   // Function to show the context menu
@@ -654,6 +869,7 @@ class OverleafManager {
       }
     }
   }
+
   // Function to add a new category to the selected criteria list
   addNewCategory () {
     let selectedList = document.getElementById('criteriaSelector').value // The selected list (e.g., Engineering Research, Action Research)
@@ -753,14 +969,34 @@ class OverleafManager {
     window.promptex.storageManager = new LocalStorageManager()
     window.promptex.storageManager.init(projectId, (err) => {
       if (err) {
-        Alerts.errorAlert({text: 'Unable to initialize storage manager. Error: ' + err.message + '. ' +
-            'Please reload webpage and try again.'})
+        Alerts.errorAlert({
+          text: 'Unable to initialize storage manager. Error: ' + err.message + '. ' +
+            'Please reload webpage and try again.'
+        })
       } else {
         if (_.isFunction(callback)) {
           callback()
         }
       }
     })
+  }
+
+  // Method to check and update standardized value if needed
+  checkAndUpdateStandardized (expectedStatus) {
+    // Retrieve the standardized status
+    if (this._standardized !== expectedStatus) {
+      // Set the standardized status to the expectedStatus if the expected status is not met
+      window.promptex.storageManager.client.setStandardizedStatus(this._project, expectedStatus, (setError, message) => {
+        if (setError) {
+          console.error('Error setting standardized status to false:', setError)
+        } else {
+          console.log('Standardized status updated successfully:', message)
+          this._standardized = expectedStatus // Update the local value
+        }
+      })
+    } else {
+      console.log('Standardized status is already okay, no action needed.')
+    }
   }
 }
 
